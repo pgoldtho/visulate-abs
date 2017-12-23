@@ -1,0 +1,20 @@
+{
+    "name": "visulate/visulate-abs",
+    "description": "Reverse index CMBS assets based on ABS-EE submissions.",
+    "authors": [
+        {
+            "name": "pgoldtho",
+            "email": "peter@goldthorp.com"
+        }
+    ],
+    "require": {
+        "elasticsearch/elasticsearch": "v6"
+    },
+    "autoload": {
+      "psr-4": {
+        "CMBS\\": "./src"}
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^6.5"
+    }
+}

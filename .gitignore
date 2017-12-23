@@ -1,0 +1,5 @@
+php/vendor/*
+php/nbproject/*
+.DS_Store
+php/.DS_Store
+php/src/.DS_Store
