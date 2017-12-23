@@ -14,7 +14,7 @@ use CMBS\PropertyGeospatial;
  */
 class PropertyGeospatialTest extends TestCase{
     
-    /*
+    
     public function testTigerLineCoords() {
 
         $response = PropertyGeospatial::getTigerLineCoordinates("451 Seventh Avenue South", "Kirkland", "WA", "98033");
@@ -36,7 +36,7 @@ class PropertyGeospatialTest extends TestCase{
         $geo2 = PropertyGeospatial::geocodeProperty("some invalid address", "nowhere", "XX", "12345");
         $this->assertNull($geo2);
     }
-    */
+    
     public function testGeocodeAssetProperty() {
         $property = [
             'propertyName' => 'Show Low Retail',
