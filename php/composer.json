@@ -8,7 +8,8 @@
         }
     ],
     "require": {
-        "elasticsearch/elasticsearch": "v6"
+        "elasticsearch/elasticsearch": "v6",
+        "nikic/fast-route": "^1.2"
     },
     "autoload": {
       "psr-4": {

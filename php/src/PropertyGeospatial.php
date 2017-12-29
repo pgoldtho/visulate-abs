@@ -69,7 +69,7 @@ class PropertyGeospatial {
     }
 
 
-    public static function getExistingCoordinates($street, $city, $state, $zipcode) {
+    private static function getExistingCoordinates($street, $city, $state, $zipcode) {
         $queryStr = '{
   "query": {
     "bool": {
