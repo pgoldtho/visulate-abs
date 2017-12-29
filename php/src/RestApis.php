@@ -91,7 +91,5 @@ class RestApis {
         }
          echo json_encode($summary);
 
-        //print_r($summary);
-        //print_r($response);
     }
 }

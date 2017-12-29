@@ -12,9 +12,6 @@ require __DIR__ . '/../vendor/autoload.php';
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', 'get_us_summary');   
     $r->addRoute('GET', '/type/{state}/{type}', 'get_type_summary');
-    $r->addRoute('GET', '/county/{state}/{county}', 'get_county_summary');
-    $r->addRoute('GET', '/address/{address}', 'get_street_address');
-    $r->addRoute('GET', '/coordinates/{lat}/{long}', 'get_coordinates');
 });
 
 
@@ -54,7 +51,8 @@ function execRequest($handler, $vars) {
             if (invalidTypeVars($vars)) { raiseError(405);}
             RestApis::getTypeSummary($vars);
             break;
-        
+        default :
+            raiseError(404);
     }
 }
 
