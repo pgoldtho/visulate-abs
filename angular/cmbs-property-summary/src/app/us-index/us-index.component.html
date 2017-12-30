@@ -1,0 +1,43 @@
+<p>Summary of properties used to collateralize commercial mortgage backed securities (CMBS) based on {{usSummary?.total|number}} records
+submitted to the Securities and Exchange Commission.</p>
+
+<div *ngFor="let s of usSummary?.state">
+<mat-expansion-panel *ngIf='s.name && s.name !== "Not Available"'>
+  <mat-expansion-panel-header>
+      {{s.name}}
+  </mat-expansion-panel-header>
+<p>Breakdown by usage of values on securitization.  Based on {{s.doc_count}} records with an average securitization date of 
+   {{s.average_secdate}}</p>
+
+  <table class="datatable">
+    <thead><tr>
+      <th>&nbsp;</th><th colspan="3">Average</th></tr><tr>
+      <th>Usage</th>
+      <th>NOI</th>
+      <th>Property Value</th>
+
+      <th>Cap Rate</th>
+    </tr></thead>
+    <tbody *ngFor='let u of s.usage; let last = last'>
+    <tr  *ngIf='u.usage_type'>
+      <td>{{u.usage_type}} ({{u.doc_count|number}})</td>
+      <td>${{u.average_secnoi|number}}</td>
+      <td>${{u.average_secvalue|number}}</td>
+      <td>{{u.sec_caprate}}</td>
+    </tr>
+
+    <tr *ngIf='last'>
+      <td>Total ({{s.doc_count|number}})</td>
+      <td>${{s.average_secnoi|number}}</td>
+      <td>${{s.average_secvalue|number}}</td>
+      <td>{{s.sec_caprate}}</td>
+    </tr>
+  </tbody>
+  </table>
+
+
+  <mat-action-row>
+    <button mat-button>Click me</button>
+  </mat-action-row>
+</mat-expansion-panel>
+</div>

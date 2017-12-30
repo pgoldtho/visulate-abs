@@ -24,14 +24,16 @@ class RestApis {
     private static function getPropertyTypeSummary($typeArray){
         $usageType = array();
         foreach ($typeArray as $type){
-            $usageType[$type["key"]] = array();
-            $usageType[$type["key"]]["usage_type"] = 
+            $usage = array();
+            $usage["type_code"] = $type["key"];
+            $usage["usage_type"] = 
                     CmbsAssetDisplay::decodeValue("PROPRTY_TYP_CODE_TYPE", $type["key"]);
-            $usageType[$type["key"]]["doc_count"] = $type["doc_count"];
-            $usageType[$type["key"]]["average_secnoi"] = round($type["average_secnoi"]["value"]);
-            $usageType[$type["key"]]["average_secvalue"] = round($type["average_secvalue"]["value"]);
-            $usageType[$type["key"]]["sec_caprate"] = 
+            $usage["doc_count"] = $type["doc_count"];
+            $usage["average_secnoi"] = round($type["average_secnoi"]["value"]);
+            $usage["average_secvalue"] = round($type["average_secvalue"]["value"]);
+            $usage["sec_caprate"] = 
                     self::getCapRate($type["average_secnoi"]["value"], $type["average_secvalue"]["value"]);
+            $usageType[] = $usage;
         }
         return $usageType;
     }
@@ -42,23 +44,25 @@ class RestApis {
         $summary["total"] = $response["hits"]["total"];
         
         foreach ($response["aggregations"]["group_by_state"]["buckets"] as $state) {
-            $summary[$state["key"]] = array();
-            $summary[$state["key"]]["state"] = CmbsAssetDisplay::decodeValue("US_STATE", $state["key"]);
-            $summary[$state["key"]]["doc_count"] = $state["doc_count"];
-            $summary[$state["key"]]["average_secnoi"] = round($state["average_secnoi"]["value"]);
-            $summary[$state["key"]]["average_secvalue"] = round($state["average_secvalue"]["value"]);
-            $summary[$state["key"]]["average_secdate"] = $state["average_secdate"]["value_as_string"];
-            $summary[$state["key"]]["sec_caprate"] = 
+            $stateSummary = array();
+            $stateSummary["state"] = $state["key"];            
+            $stateSummary["name"] = CmbsAssetDisplay::decodeValue("US_STATE", $state["key"]);
+            $stateSummary["doc_count"] = $state["doc_count"];
+            $stateSummary["average_secnoi"] = round($state["average_secnoi"]["value"]);
+            $stateSummary["average_secvalue"] = round($state["average_secvalue"]["value"]);
+            $stateSummary["average_secdate"] = $state["average_secdate"]["value_as_string"];
+            $stateSummary["sec_caprate"] = 
                     self::getCapRate($state["average_secnoi"]["value"], $state["average_secvalue"]["value"]);
             
-            $summary[$state["key"]]["average_curvalue"] = round($state["average_curvalue"]["value"]);
-            $summary[$state["key"]]["average_curnoi"] = round($state["average_curnoi"]["value"]);
-            $summary[$state["key"]]["cur_caprate"] = 
+            $stateSummary["average_curvalue"] = round($state["average_curvalue"]["value"]);
+            $stateSummary["average_curnoi"] = round($state["average_curnoi"]["value"]);
+            $stateSummary["cur_caprate"] = 
                     self::getCapRate($state["average_curnoi"]["value"], $state["average_curvalue"]["value"]);
             
-            $summary[$state["key"]]["usage"] = 
+            $stateSummary["usage"] = 
                     self::getPropertyTypeSummary($state["group_by_type"]["buckets"]);
             
+            $summary["state"][] = $stateSummary;
         }
         
         echo json_encode($summary);

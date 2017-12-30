@@ -36,7 +36,8 @@ class ElasticSearchQueries {
     "group_by_state": {
       "terms": {
         "field": "property.propertyState",
-        "size": 52
+        "size": 52,
+        "order": {"_key": "asc"}
       },
       "aggs": {
         "average_secvalue": {
@@ -67,7 +68,8 @@ class ElasticSearchQueries {
         "group_by_type": {
           "terms": {
             "field": "property.propertyTypeCode",
-            "size": 15
+            "size": 15,
+            "order": {"_key": "desc"}
           },
           "aggs": {
             "average_secvalue": {
