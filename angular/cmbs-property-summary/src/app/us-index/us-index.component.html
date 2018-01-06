@@ -6,7 +6,7 @@ submitted to the Securities and Exchange Commission.</p>
   <mat-expansion-panel-header>
       {{s.name}}
   </mat-expansion-panel-header>
-<p>Breakdown by usage of values on securitization.  Based on {{s.doc_count}} records with an average securitization date of 
+<p>Breakdown by usage of values on securitization.  Based on {{s.doc_count}} records with an average securitization date of
    {{s.average_secdate}}</p>
 
   <table class="datatable">
@@ -18,20 +18,23 @@ submitted to the Securities and Exchange Commission.</p>
 
       <th>Cap Rate</th>
     </tr></thead>
-    <tbody *ngFor='let u of s.usage; let last = last'>
+    <tbody *ngFor='let u of s.usage; let first = first'>
+      <tr *ngIf='first'>
+        <td>All ({{s.doc_count|number}})</td>
+        <td>${{s.average_secnoi|number}}</td>
+        <td>${{s.average_secvalue|number}}</td>
+        <td>{{s.sec_caprate}}</td>
+      </tr>
+
     <tr  *ngIf='u.usage_type'>
-      <td>{{u.usage_type}} ({{u.doc_count|number}})</td>
+      <td><a routerLink="/locations/{{s.state}}/{{u.type_code}}"> {{u.usage_type}} </a>
+        ({{u.doc_count|number}})</td>
       <td>${{u.average_secnoi|number}}</td>
       <td>${{u.average_secvalue|number}}</td>
       <td>{{u.sec_caprate}}</td>
     </tr>
 
-    <tr *ngIf='last'>
-      <td>Total ({{s.doc_count|number}})</td>
-      <td>${{s.average_secnoi|number}}</td>
-      <td>${{s.average_secvalue|number}}</td>
-      <td>{{s.sec_caprate}}</td>
-    </tr>
+
   </tbody>
   </table>
 
@@ -41,3 +44,5 @@ submitted to the Securities and Exchange Commission.</p>
   </mat-action-row>
 </mat-expansion-panel>
 </div>
+
+<!--pre>{{usSummary|json}}</pre-->

@@ -3,7 +3,6 @@
  * Copyright (c) Visulate LLC 2017 All rights reserved
  */
 namespace CMBS;
-use CMBS\ElasticSearchQueries;
 use FastRoute;
 
 require __DIR__ . '/../vendor/autoload.php';
@@ -12,6 +11,7 @@ require __DIR__ . '/../vendor/autoload.php';
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
     $r->addRoute('GET', '/', 'get_us_summary');   
     $r->addRoute('GET', '/type/{state}/{type}', 'get_type_summary');
+    $r->addRoute('GET', '/asset/{state}/{type}/{name}', 'get_asset_details');
 });
 
 
@@ -50,6 +50,9 @@ function execRequest($handler, $vars) {
         case 'get_type_summary':
             if (invalidTypeVars($vars)) { raiseError(405);}
             RestApis::getTypeSummary($vars);
+            break;
+        case 'get_asset_details':
+            RestApis::getAssetDetails($vars);
             break;
         default :
             raiseError(404);

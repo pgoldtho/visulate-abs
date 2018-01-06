@@ -1,4 +1,4 @@
-export class UsSummary {
+/*export class UsSummary {
   total: number;
   state: Array<{
     state: string;
@@ -17,10 +17,9 @@ export class UsSummary {
       sec_caprate: number;
     }>
   }>
-}
+}*/
 
-/*
+
 export class UsSummary {
   us: Object;
 }
-*/
