@@ -31,8 +31,37 @@ class CmbsAbsEE {
         return $result;
     }
     
+    public static function waitForUserInput($message) {
+        echo "$message. Type 'y' to continue: ";
+        $handle = fopen("php://stdin", "r");
+        $line = fgets($handle);
+        if (trim($line) != 'y') {
+            echo "ABORTING!\n";
+            exit;
+        }
+        fclose($handle);
+        echo "\n";
+        echo "Continuing...\n";
+    }
+
     public static function removeInvalidCharacters(&$data) {     
         $data = str_replace('&#13;', "", (string) $data);      
+    }
+    
+    private static function getCoordinates($esClient, $property){
+        // Check to see if an existing elasticSearch document has the coordinates
+        $existingCoords = $esClient->getExistingCoordinates
+                   ($property['propertyAddress'], 
+                    $property['propertyCity'], 
+                    $property['propertyState'], 
+                    $property['propertyZip']);
+        if ($existingCoords) {
+            print "Found existing coords for ".$property['propertyAddress']."\n";
+            return $existingCoords;}
+        
+        // Geocode the address
+        $location = PropertyGeospatial::geocodeAssetProperty($property);
+        return $location;        
     }
 
     public function seedAssets($filing) {
@@ -59,12 +88,10 @@ class CmbsAbsEE {
             $filing["asset"] = $parentAsset;
 
             // Some assets have multiple properties
-            if (is_object($property[0])) {
-                //$i = 1;
+            if (is_object($property[0])) {                
                 foreach ($property as $i => $prop) {
-                    $propArray = (array) $prop; 
-                    
-                    $location = PropertyGeospatial::geocodeAssetProperty($propArray);
+                    $propArray = (array) $prop;                     
+                    $location = self::getCoordinates($esClient, $propArray);
                     if ($location) {
                         $propArray["location"] = $location;
                     }
@@ -73,12 +100,10 @@ class CmbsAbsEE {
                     $filing["property"] = $propArray;
                     $esClient->createAsset($id, $filing);
                     $esClient->indexAsset();
-                    
-                   // $i++;
+                  
                 }
             } else {
-
-                $location = PropertyGeospatial::geocodeAssetProperty($property);
+                $location = self::getCoordinates($esClient, $property);
                 if ($location) {
                     $property["location"] = $location;
                 }

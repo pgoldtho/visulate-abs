@@ -1,9 +1,14 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatIconModule } from '@angular/material/icon';
 import { AgmCoreModule } from '@agm/core';
+import { DropdownModule, DataTableModule, SharedModule} from 'primeng/primeng';
+
 
 import { AppComponent } from './app.component';
 import { UsIndexComponent } from './us-index/us-index.component';
@@ -23,11 +28,17 @@ import { AssetDetailsComponent } from './asset-details/asset-details.component';
   imports: [
     BrowserModule,
     HttpClientModule,
+    FormsModule,
     NoopAnimationsModule,
+    DropdownModule,
+    DataTableModule,
+    SharedModule,
     MatExpansionModule,
+    MatToolbarModule,
+    MatIconModule,
     AppRoutingModule,
     AgmCoreModule.forRoot({
-      apiKey: 'AIzaSyAWcpVN8-finPP0vUibiXJyzPdTiKqzD6M'
+      apiKey: 'AIzaSyBMD21JpmlHER9Cdvi3mrA0vw8yQ6U5xS4'
     })
   ],
   providers: [UsIndexService],

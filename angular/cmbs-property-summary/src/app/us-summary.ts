@@ -1,7 +1,8 @@
-/*export class UsSummary {
+export class UsSummary {
   total: number;
   state: Array<{
     state: string;
+    name: string;
     average_secnoi: number;
     average_secvalue: number;
     average_secdate: Date;
@@ -10,6 +11,7 @@
     average_curnoi: number;
     cur_caprate: number;
     usage: Array<{
+      type_code: string;
       usage_type: string;
       doc_count: number;
       average_secnoi: number;
@@ -17,9 +19,9 @@
       sec_caprate: number;
     }>
   }>
-}*/
+}
 
-
+/*
 export class UsSummary {
   us: Object;
-}
+}*/

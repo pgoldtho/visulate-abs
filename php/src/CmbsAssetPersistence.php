@@ -43,7 +43,6 @@ class CmbsAssetPersistence {
         $this->esClient = new ElasticSearchClient();
         $this->index = $this->esClient->getIndex();
         $this->type = $this->esClient->getType();
-        
     }
     
     public function createAsset($id, $asset) {
@@ -71,6 +70,36 @@ class CmbsAssetPersistence {
             'id' => $this->id
         ];
         $this->asset = $client->get($params);
+    }
+    
+    public function getExistingCoordinates($street, $city, $state, $zipcode) {
+        $queryStr = '{
+  "query": {
+    "bool": {
+      "must": { 
+            "match_phrase": {"property.propertyAddress": "' . $street . '"}
+            }, 
+      "filter" : [
+          {"term": {"property.propertyCity": "' . $city . '"}},
+          {"term": {"property.propertyState": "' . $state . '"}},
+          {"term": {"property.propertyZip": "' . $zipcode . '"}},
+          {"exists": {"field": "property.location"}}
+          ]
+    }
+  }, 
+  "_source" : ["property.location"]
+}';
+
+        $params = [
+            'index' => $this->index,
+            'type' => $this->type,
+            'body' => $queryStr
+        ];
+        
+        $client = $this->esClient->getClient();
+        $response = $client->search($params);
+
+        return $response['hits']['hits'][0]['_source']['property']['location'];
     }
 
     public function geocodeProperties() {
