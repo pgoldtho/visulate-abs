@@ -63,10 +63,8 @@ class RestApis {
                     self::getPropertyTypeSummary($state["group_by_type"]["buckets"]);
             
             $summary["state"][] = $stateSummary;
-        }
-        
+        }        
         echo json_encode($summary);
-
     }
     
     public function getTypeSummary($vars) {
@@ -85,15 +83,34 @@ class RestApis {
         
         $response = ElasticSearchQueries::getTypeSummary($state, $type);
         foreach ($response["aggregations"]["property_name"]["buckets"] as $prop){
-            $summary[$prop["key"]] = array();
-            $summary[$prop["key"]]["location"] = $prop["centroid"]["location"];
-            $summary[$prop["key"]]["average_secnoi"] = round($prop["average_secnoi"]["value"]);
-            $summary[$prop["key"]]["average_secvalue"] = round($prop["average_secvalue"]["value"]);
-            $summary[$prop["key"]]["average_secdate"] = $prop["average_secdate"]["value_as_string"];
-            $summary[$prop["key"]]["sec_caprate"] = 
+            $propSummary = array();
+            $propSummary["name"] = $prop["key"];
+            $propSummary["location"] = $prop["centroid"]["location"];
+            $propSummary["average_secnoi"] = round($prop["average_secnoi"]["value"]);
+            $propSummary["average_secvalue"] = round($prop["average_secvalue"]["value"]);
+            $propSummary["average_secdate"] = $prop["average_secdate"]["value_as_string"];
+            $propSummary["sec_caprate"] = 
                     self::getCapRate($prop["average_secnoi"]["value"], $prop["average_secvalue"]["value"]);
+            
+            $summary["property"][] = $propSummary;            
         }
          echo json_encode($summary);
-
+    }
+    
+    public function getAssetDetails($vars) {
+        $state = strtoupper($vars['state']);
+        $type = strtoupper($vars['type']);
+        $name = urldecode($vars['name']);
+        
+        $assetDetails = array();
+        
+        $response = ElasticSearchQueries::getAssetDetails($state, $type, $name);
+       // print_r($response);
+        
+        foreach ($response["hits"]["hits"] as $asset) {
+           $assetDetails[] = CmbsAssetDisplay::decodeAsset($asset["_source"]);
+           // $assetDetails[] = $asset["_source"];
+        }
+        echo json_encode($assetDetails);
     }
 }

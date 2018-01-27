@@ -5,8 +5,6 @@
  */
 
 namespace CMBS;
-use CMBS\ElasticSearchClient;
-
 
 /**
  * Description of PropertyGeospatial
@@ -16,7 +14,7 @@ use CMBS\ElasticSearchClient;
 class PropertyGeospatial {
     const CENSUS_GEOCODER = "https://geocoding.geo.census.gov/geocoder/locations/address";
     const GOOGLE_GEOCODER = "https://maps.googleapis.com/maps/api/geocode/json";
-    const GOOGLE_API_KEY = "";  //Add API Key before use
+    const GOOGLE_API_KEY = "AIzaSyBMD21JpmlHER9Cdvi3mrA0vw8yQ6U5xS4";  //Add API Key before use
 
 
     public static function getTigerLineCoordinates($street, $city, $state, $zipcode) {
@@ -69,49 +67,12 @@ class PropertyGeospatial {
     }
 
 
-    private static function getExistingCoordinates($street, $city, $state, $zipcode) {
-        $queryStr = '{
-  "query": {
-    "bool": {
-      "must": { 
-            "match_phrase": {"property.propertyAddress": "' . $street . '"}
-            }, 
-      "filter" : [
-          {"term": {"property.propertyCity": "' . $city . '"}},
-          {"term": {"property.propertyState": "' . $state . '"}},
-          {"term": {"property.propertyZip": "' . $zipcode . '"}},
-          {"exists": {"field": "property.location"}}
-          ]
-    }
-  }, 
-  "_source" : ["property.location"]
-}';
-        $esClient = new ElasticSearchClient();
-        $client = $esClient->getClient();
-        $index = $esClient->getIndex();
-        $type = $esClient->getType();
 
-        $params = [
-            'index' => $index,
-            'type' => $type,
-            'body' => $queryStr
-        ];
-
-        $response = $client->search($params);
-        return $response['hits']['hits'][0]['_source']['property']['location'];
-    }
 
     public static function geocodeProperty($street, $city, $state, $zipcode) {
         if (!($street && $city && $state && $zipcode)) {
             return;
         }
-        
-        // Check to see if an existing elasticSearch document has the coordinates
-        $existingCoords = self::getExistingCoordinates($street, $city, $state, $zipcode);
-        if ($existingCoords) {
-            print "Found existing coords for $street \n";
-            return $existingCoords;}
-                
         // Call the (free) US Census geocoder
         $tlCoords = self::getTigerLineCoordinates($street, $city, $state, $zipcode);
         if ($tlCoords) {return $tlCoords;}
@@ -122,8 +83,6 @@ class PropertyGeospatial {
         
         // no coords found
         return null;
-        
-        
     }
     
     public static function geocodeAssetProperty($property) {

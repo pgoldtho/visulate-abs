@@ -13,8 +13,6 @@ namespace CMBS;
  */
 class CmbsAssetDisplay {
 
-    public $displayAsset;
-
     public static function decodeValue($codeType, $codeValue) {
         $codeIndex = ["ARM_INDX_CODE_TYPE" => [
                 "A" => "11 FHLB COFI  (1 Month)",
@@ -273,48 +271,40 @@ class CmbsAssetDisplay {
         return $codeIndex[$codeType][$codeValue];
     }
 
-    private function decodeAssetValues($key1, $key2, $codeType) {
-        if (isset($this->displayAsset[$key1][$key2])) {
-            $this->displayAsset[$key1][$key2] = CmbsAssetDisplay::decodeValue($codeType, $this->displayAsset[$key1][$key2]);
-        }
+    private function decodeAssetValues(&$asset, $key1, $key2, $codeType) {
+        if (isset($asset[$key1][$key2])) {
+            $asset[$key1][$key2] = CmbsAssetDisplay::decodeValue($codeType, $asset[$key1][$key2]);
+        }        
     }
 
-    private function decodeAsset() {
-        $this->decodeAssetValues("asset", "interestAccrualMethodCode", "INTR_ACCRL_METH_CODE_TYPE");
-        $this->decodeAssetValues("asset", "originalInterestRateTypeCode", "ORIG_INTR_RT_TYP_CODE_TYPE");
-        $this->decodeAssetValues("asset", "lienPositionSecuritizationCode", "LIEN_PSTN_CODE_TYPE");
-        $this->decodeAssetValues("asset", "loanStructureCode", "LOAN_STCTR_CODE_TYPE");
-        $this->decodeAssetValues("asset", "paymentTypeCode", "PYMNT_TYP_CODE_TYPE");
-        $this->decodeAssetValues("asset", "paymentFrequencyCode", "PYMNT_FREQ_CODE_TYPE");
-        $this->decodeAssetValues("asset", "armIndexCode", "ARM_INDX_CODE_TYPE");
-        $this->decodeAssetValues("asset", "rateResetFrequencyCode", "RT_RST_FREQ_CODE_TYPE");
-        $this->decodeAssetValues("asset", "paymentResetFrequencyCode", "PY_RST_FREQ_CODE_TYPE");
-        $this->decodeAssetValues("asset", "servicingAdvanceMethodCode", "SRVC_ADV_METH_CODE_TYPE");
-        $this->decodeAssetValues("asset", "paymentStatusLoanCode", "PYMNT_STAT_LOAN_CODE_TYPE");
-        $this->decodeAssetValues("asset", "assetSubjectDemandStatusCode", "ASSET_SUBJ_DEMAND_STAT_CODE_TYPE");
-        $this->decodeAssetValues("asset", "repurchaseReplacementReasonCode", "REPRCH_RPLCMNT_REASN_CODE_TYPE");
-        $this->decodeAssetValues("asset", "liquidationPrepaymentCode", "LIQDTN_PRPYMNT_CODE_TYPE");
-        $this->decodeAssetValues("asset", "workoutStrategyCode", "WRKOUT_STRAT_CODE_TYPE");
-        $this->decodeAssetValues("asset", "modificationCode", "MOD_CODE_TYPE");
+    public function decodeAsset($asset) {
+        self::decodeAssetValues($asset, "asset", "interestAccrualMethodCode", "INTR_ACCRL_METH_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "originalInterestRateTypeCode", "ORIG_INTR_RT_TYP_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "lienPositionSecuritizationCode", "LIEN_PSTN_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "loanStructureCode", "LOAN_STCTR_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "paymentTypeCode", "PYMNT_TYP_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "paymentFrequencyCode", "PYMNT_FREQ_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "armIndexCode", "ARM_INDX_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "rateResetFrequencyCode", "RT_RST_FREQ_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "paymentResetFrequencyCode", "PY_RST_FREQ_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "servicingAdvanceMethodCode", "SRVC_ADV_METH_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "paymentStatusLoanCode", "PYMNT_STAT_LOAN_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "assetSubjectDemandStatusCode", "ASSET_SUBJ_DEMAND_STAT_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "repurchaseReplacementReasonCode", "REPRCH_RPLCMNT_REASN_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "liquidationPrepaymentCode", "LIQDTN_PRPYMNT_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "workoutStrategyCode", "WRKOUT_STRAT_CODE_TYPE");
+        self::decodeAssetValues($asset, "asset", "modificationCode", "MOD_CODE_TYPE");
 
-        $this->decodeAssetValues("property", "propertyTypeCode", "PROPRTY_TYP_CODE_TYPE");
-        $this->decodeAssetValues("property", "valuationSourceSecuritizationCode", "VAL_SRC_SCRTZTN_CODE_TYPE");
-        $this->decodeAssetValues("property", "mostRecentValuationSourceCode", "MST_RCNT_VAL_SRC_CODE_TYPE");
-        $this->decodeAssetValues("property", "propertyStatusCode", "PROPRTY_STAT_CODE_TYPE");
-        $this->decodeAssetValues("property", "DefeasedStatusCode", "DFSNC_STAT_CODE_TYPE");
-        $this->decodeAssetValues("property", "netOperatingIncomeNetCashFlowSecuritizationCode", "NET_OPRTNG_INCM_NET_CASH_FLW_SCRTZTN_CODE_TYPE");
-        $this->decodeAssetValues("property", "netOperatingIncomeNetCashFlowCode", "NET_OPRTNG_INCM_NET_CASH_FLW_CODE_TYPE");
-        $this->decodeAssetValues("property", "debtServiceCoverageSecuritizationCode", "DEBT_SRVC_CVRG_CODE_TYPE");
-        $this->decodeAssetValues("property", "mostRecentDebtServiceCoverageCode", "MST_RCNT_DEBT_SRVC_AMNT_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "propertyTypeCode", "PROPRTY_TYP_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "valuationSourceSecuritizationCode", "VAL_SRC_SCRTZTN_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "mostRecentValuationSourceCode", "MST_RCNT_VAL_SRC_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "propertyStatusCode", "PROPRTY_STAT_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "DefeasedStatusCode", "DFSNC_STAT_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "netOperatingIncomeNetCashFlowSecuritizationCode", "NET_OPRTNG_INCM_NET_CASH_FLW_SCRTZTN_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "netOperatingIncomeNetCashFlowCode", "NET_OPRTNG_INCM_NET_CASH_FLW_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "debtServiceCoverageSecuritizationCode", "DEBT_SRVC_CVRG_CODE_TYPE");
+        self::decodeAssetValues($asset, "property", "mostRecentDebtServiceCoverageCode", "MST_RCNT_DEBT_SRVC_AMNT_CODE_TYPE");
+        
+        return $asset;
     }
-
-    public function __construct($asset) {
-        $this->setAsset($asset);
-    }
-
-    public function setAsset($asset) {
-        $this->displayAsset = $asset;
-        $this->decodeAsset();
-    }
-
 }

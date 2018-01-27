@@ -18,7 +18,7 @@ td.current {
 }
 
 table.datatable, table.datatable1 {
-    width: 90%;
+    width: 100%;
     border-style: solid none none solid;
     border-width: 1px;
     border-color: #ccc;

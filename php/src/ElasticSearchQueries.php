@@ -132,8 +132,24 @@ class ElasticSearchQueries {
       }
     }
   }
+}';       
+       return self::execQuery($queryStr);
+   }
+   public static function getAssetDetails($state, $type, $name){
+       $queryStr = '{
+  "sort": [
+    {"asset.reportingPeriodBeginningDate" : {"order": "asc"}}
+  ],
+  "query": {
+    "bool": {
+        "filter": [
+    {"term": {"property.propertyState": "'.$state.'"}},
+    {"term": {"property.propertyTypeCode": "'.$type.'"}},
+    {"term": {"property.propertyName": "'.$name.'"}}    
+    ]
+    }
+  }
 }';
-       
        return self::execQuery($queryStr);
    }
 }
