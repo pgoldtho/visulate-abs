@@ -138,7 +138,7 @@ class ElasticSearchQueries {
    public static function getAssetDetails($state, $type, $name){
        $queryStr = '{
   "sort": [
-    {"asset.reportingPeriodBeginningDate" : {"order": "asc"}}
+    {"asset.reportingPeriodBeginningDate" : {"order": "desc"}}
   ],
   "query": {
     "bool": {
