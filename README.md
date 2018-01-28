@@ -11,7 +11,8 @@ Use the elasticSearchMapping.json file to create mappings for the index:
 
 Edit php/src/PropertyGeospatial.php to add a [Google Geocoding API key](https://developers.google.com/maps/documentation/geocoding/get-api-key):
 
-```class PropertyGeospatial {
+```
+class PropertyGeospatial {
     const CENSUS_GEOCODER = "https://geocoding.geo.census.gov/geocoder/locations/address";
     const GOOGLE_GEOCODER = "https://maps.googleapis.com/maps/api/geocode/json";
     const GOOGLE_API_KEY = "";  //Add API Key before use
@@ -19,7 +20,8 @@ Edit php/src/PropertyGeospatial.php to add a [Google Geocoding API key](https://
 
 Setup an apache webserver with the following settings     
 
-```LoadModule include_module libexec/apache2/mod_include.so
+```
+LoadModule include_module libexec/apache2/mod_include.so
 LoadModule rewrite_module libexec/apache2/mod_rewrite.so
 LoadModule php7_module libexec/apache2/libphp7.so
 
@@ -38,10 +40,11 @@ LoadModule php7_module libexec/apache2/libphp7.so
  RewriteRule . /index.php [L]
  ```
 
-Then run seedData.php to add some sample data:
+Then run setup the php code and run seedData.php to add some sample data:
 
-```cd php/src
+```
+cd php
+composer install
+cd ./src
 php seedData.php
 ```
-
-The sample data is in the test_data directory.  It was source by calling a <https://finsight.com/> API.  A Postman collection in the test_data directory has the GET request for this.
