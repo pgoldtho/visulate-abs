@@ -1,1 +1,8 @@
-<pre>{{assetDetail|json}}</pre>  
+<pre>{{assetDetail|json}}</pre>
+
+<table>
+  <tr *ngFor="let d of property">
+    <th>{{d[0]}}</th>
+    <td>{{d[1]}}</td>
+  </tr>
+</table>

@@ -14,6 +14,8 @@ export class AssetDetailsComponent implements OnInit {
 
   assetDetail: UsSummary[];
 
+  property = [];
+
   constructor(
     private route: ActivatedRoute,
     private location: Location,
@@ -31,7 +33,10 @@ export class AssetDetailsComponent implements OnInit {
       var name = params['name'];
 
       this.indexService.getAssetDetails(state, useCode, name)
-      .subscribe(UsSummary => this.assetDetail = UsSummary);
+      .subscribe(UsSummary => {
+        this.assetDetail = UsSummary;
+        this.property = Object.keys(this.assetDetail[0]['property']).map(k => [k, this.assetDetail[0]['property'][k]]);
+      });
     });
   }
 }
