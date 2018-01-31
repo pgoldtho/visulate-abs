@@ -1,1 +1,45 @@
-<pre>{{assetDetail|json}}</pre>  
+<agm-map [latitude]="lat" [longitude]="lng">
+  <agm-marker *ngIf="coords" [latitude]="lat" [longitude]="lng"></agm-marker>
+</agm-map>
+
+<div class="example-container mat-elevation-z8">
+  <mat-table #table [dataSource]="propDataSource">
+
+
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef class="header">{{header}}</mat-header-cell>
+      <mat-cell *matCellDef="let element"  class="name"> {{spaceAndCap(element.name)}}: </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef class="hidden"></mat-header-cell>
+        <mat-cell *matCellDef="let element" class=""> {{element.value.lat ? element.value.lat+', '+element.value.lon : element.value}} </mat-cell>
+    </ng-container>
+
+
+
+    <mat-header-row *matHeaderRowDef="displayedColumns" (click)="propShowing = !propShowing"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!propShowing"></mat-row>
+  </mat-table>
+</div>
+
+<div class="example-container mat-elevation-z8">
+  <mat-table #table [dataSource]="assetDataSource">
+
+
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef class="header">Asset</mat-header-cell>
+      <mat-cell *matCellDef="let element"  class="name"> {{spaceAndCap(element.name)}}: </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="value">
+        <mat-header-cell *matHeaderCellDef class="hidden"></mat-header-cell>
+        <mat-cell *matCellDef="let element" class=""> {{element.value}} </mat-cell>
+    </ng-container>
+
+
+
+    <mat-header-row *matHeaderRowDef="displayedColumns" (click)="assetShowing = !assetShowing"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!assetShowing"></mat-row>
+  </mat-table>
+</div>

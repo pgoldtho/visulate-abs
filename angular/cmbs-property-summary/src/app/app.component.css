@@ -43,6 +43,8 @@ body, input[text], button {
     width: 100%; /* Full width */
     height: 50px;
     line-height: 50px;
+    z-index: 1;
+    right: 0;
 }
 
 /* Links inside the navbar */
