@@ -6,8 +6,10 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTableModule } from '@angular/material/table';
 import { AgmCoreModule } from '@agm/core';
 import { DropdownModule, DataTableModule, SharedModule} from 'primeng/primeng';
+import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 
 
 import { AppComponent } from './app.component';
@@ -23,7 +25,8 @@ import { AssetDetailsComponent } from './asset-details/asset-details.component';
     AppComponent,
     UsIndexComponent,
     PropertyLocationsComponent,
-    AssetDetailsComponent
+    AssetDetailsComponent,
+    BreadcrumbComponent
   ],
   imports: [
     BrowserModule,
@@ -39,7 +42,8 @@ import { AssetDetailsComponent } from './asset-details/asset-details.component';
     AppRoutingModule,
     AgmCoreModule.forRoot({
       apiKey: 'AIzaSyBMD21JpmlHER9Cdvi3mrA0vw8yQ6U5xS4'
-    })
+    }),
+    MatTableModule
   ],
   providers: [UsIndexService],
   bootstrap: [AppComponent]

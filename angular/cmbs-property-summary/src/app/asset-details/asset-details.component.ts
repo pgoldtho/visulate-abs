@@ -5,6 +5,12 @@ import { Location } from '@angular/common';
 import { UsIndexService } from '../us-index.service';
 import { UsSummary } from '../us-summary';
 
+import { MatTableDataSource } from '@angular/material';
+import { DataSource } from "@angular/cdk/table";
+import 'rxjs/add/observable/of';
+import { Observable } from "rxjs/Observable";
+import { CollectionViewer } from "@angular/cdk/collections";
+
 @Component({
   selector: 'app-asset-details',
   templateUrl: './asset-details.component.html',
@@ -15,16 +21,22 @@ export class AssetDetailsComponent implements OnInit {
   assetDetail: UsSummary[];
 
   property = [];
+  asset = [];
+
+  lat: number = 51.678418;
+  lng: number = 7.809007;
+  coords: any;
+
+  header: string;
+
+  propShowing = false;
+  assetShowing = false;
 
   constructor(
     private route: ActivatedRoute,
     private location: Location,
     private indexService: UsIndexService
   ) { }
-
-  ngOnInit() {
-    this.addRouterSubscription();
-  }
 
   addRouterSubscription(): void {
     this.route.params.subscribe(params => {
@@ -35,8 +47,51 @@ export class AssetDetailsComponent implements OnInit {
       this.indexService.getAssetDetails(state, useCode, name)
       .subscribe(UsSummary => {
         this.assetDetail = UsSummary;
-        this.property = Object.keys(this.assetDetail[0]['property']).map(k => [k, this.assetDetail[0]['property'][k]]);
+        let property = this.assetDetail[0]['property'];
+        this.coords = property.location;
+        this.lat = this.coords.lat;
+        this.lng = this.coords.lon;
+        // this.header = property.propertyAddress+', '+property.propertyCity+', '+property.propertyState;
+        this.header = property.propertyName;
+        this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
+        this.propDataSource = new MyDataSource(this.property);
+        let asset = this.assetDetail[0]['asset'];
+        this.asset = Object.keys(asset).map(k => ({ name: k, value: asset[k]}));
+        this.assetDataSource = new MyDataSource(this.asset);
       });
     });
   }
+
+  displayedColumns = ['name', 'value'];
+  propDataSource: MyDataSource;
+  assetDataSource: MyDataSource;
+
+  ngOnInit() {
+    this.addRouterSubscription();
+  }
+
+  spaceAndCap(name: string) {
+    let result = name.replace(/[A-Z]/g, c => ' '+c);
+    return result.replace(result.substring(0, 1), result.substring(0, 1).toUpperCase());
+  }
+
+}
+
+export class MyDataSource extends DataSource<Element> {
+
+  constructor(private element: Element[]) {
+    super();
+  }
+
+  connect(): Observable<Element[]> {
+    return Observable.of(this.element);
+  }
+
+  disconnect(collectionViewer: CollectionViewer): void { }
+
+}
+
+export interface Element {
+  name: string;
+  value: string;
 }

@@ -8,10 +8,25 @@ import { AssetDetailsComponent } from
          './asset-details/asset-details.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: '/index', pathMatch: 'full' },
-  { path: 'index', component: UsIndexComponent },
-  { path: 'locations/:state/:type_code', component: PropertyLocationsComponent },
-  { path: 'asset/:state/:type_code/:name', component: AssetDetailsComponent }
+  {
+    path: '',
+    redirectTo: '/index',
+    pathMatch: 'full'
+  },
+  {
+    path: 'index',
+    component: UsIndexComponent
+
+  },
+  {
+    path:
+    'locations/:state/:type_code',
+    component: PropertyLocationsComponent
+  },
+  {
+    path: 'asset/:state/:type_code/:name',
+    component: AssetDetailsComponent
+  }
 ]
 
 @NgModule({
