@@ -9,7 +9,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { AgmCoreModule } from '@agm/core';
 import { DropdownModule, DataTableModule, SharedModule} from 'primeng/primeng';
-import { BreadcrumbComponent } from './breadcrumb/breadcrumb.component';
 
 
 import { AppComponent } from './app.component';
@@ -25,8 +24,7 @@ import { AssetDetailsComponent } from './asset-details/asset-details.component';
     AppComponent,
     UsIndexComponent,
     PropertyLocationsComponent,
-    AssetDetailsComponent,
-    BreadcrumbComponent
+    AssetDetailsComponent
   ],
   imports: [
     BrowserModule,
