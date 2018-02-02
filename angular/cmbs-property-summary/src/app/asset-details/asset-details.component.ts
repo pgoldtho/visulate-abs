@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -16,12 +16,16 @@ import { CollectionViewer } from "@angular/cdk/collections";
   templateUrl: './asset-details.component.html',
   styleUrls: ['./asset-details.component.css']
 })
-export class AssetDetailsComponent implements OnInit {
+export class AssetDetailsComponent {
 
   assetDetail: UsSummary[];
 
   property = [];
   asset = [];
+
+  displayedColumns = ['name', 'value'];
+  propDataSource: MyDataSource;
+  assetDataSource: MyDataSource;
 
   lat: number = 51.678418;
   lng: number = 7.809007;
@@ -32,42 +36,37 @@ export class AssetDetailsComponent implements OnInit {
   propShowing = false;
   assetShowing = false;
 
+  @Input() state: string;
+  @Input() type: string;
+  @Input() name: string;
+
   constructor(
     private route: ActivatedRoute,
     private location: Location,
     private indexService: UsIndexService
   ) { }
 
-  addRouterSubscription(): void {
-    this.route.params.subscribe(params => {
-      var state = params['state'];
-      var useCode = params['type_code'];
-      var name = params['name'];
 
-      this.indexService.getAssetDetails(state, useCode, name)
-      .subscribe(UsSummary => {
+  ngOnChanges() {
+    if(this.name) {
+      var state = this.state;
+      var useCode = this.type;
+      var name = this.name;
+      this.indexService.getAssetDetails(state, useCode, name).subscribe( UsSummary => {
         this.assetDetail = UsSummary;
         let property = this.assetDetail[0]['property'];
         this.coords = property.location;
         this.lat = this.coords.lat;
         this.lng = this.coords.lon;
-        // this.header = property.propertyAddress+', '+property.propertyCity+', '+property.propertyState;
         this.header = property.propertyName;
         this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
+        this.property = this.property.filter(i => i.name !== 'location');
         this.propDataSource = new MyDataSource(this.property);
         let asset = this.assetDetail[0]['asset'];
         this.asset = Object.keys(asset).map(k => ({ name: k, value: asset[k]}));
         this.assetDataSource = new MyDataSource(this.asset);
       });
-    });
-  }
-
-  displayedColumns = ['name', 'value'];
-  propDataSource: MyDataSource;
-  assetDataSource: MyDataSource;
-
-  ngOnInit() {
-    this.addRouterSubscription();
+    }
   }
 
   spaceAndCap(name: string) {

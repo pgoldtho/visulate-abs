@@ -16,7 +16,6 @@ import { DataSource } from "@angular/cdk/collections";
 })
 export class PropertyLocationsComponent implements OnInit {
   stateSummary: UsSummary[];
-  assetDetail: UsSummary[];
 
   title: string = 'My first AGM project';
   lat: number = 51.678418;
@@ -24,13 +23,11 @@ export class PropertyLocationsComponent implements OnInit {
 
   header: string;
 
-  propShowing = false;
-  assetShowing = false;
-
-  property = [];
-  asset = [];
-
   map: any;
+
+  state: string;
+  type: string;
+  name: string;
 
   private convertStringToNumber(value: string): number {
     return +value;
@@ -61,17 +58,9 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   showDetails(state, type, name) {
-    this.indexService.getAssetDetails(state, type, name).subscribe( UsSummary => {
-      this.assetDetail = UsSummary;
-      let property = this.assetDetail[0]['property'];
-      this.header = property.propertyName;
-      this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
-      this.property = this.property.filter(i => i.name !== 'location');
-      this.propDataSource = new MyDataSource(this.property);
-      let asset = this.assetDetail[0]['asset'];
-      this.asset = Object.keys(asset).map(k => ({ name: k, value: asset[k]}));
-      this.assetDataSource = new MyDataSource(this.asset);
-    });
+    this.state = state;
+    this.type = type;
+    this.name = name;
   }
 
   displayedColumns = ['name', 'value'];
@@ -83,26 +72,9 @@ export class PropertyLocationsComponent implements OnInit {
     return result.replace(result.substring(0, 1), result.substring(0, 1).toUpperCase());
   }
 
-  windowClosed() {
-    this.assetDetail = null;
+  mapWindowClosed(name) {
+    if(this.name === name) this.name = null;
   }
-
-  // mapReady(map) {
-  //   this.map = map;
-  //   this.map.fitBounds(this.getMapBounds());
-  // }
-
-  // getMapBounds() {
-  //   if(this.stateSummary) {
-  //     let bounds: LatLngBounds = new google.maps.LatLngBounds();
-  //     for(let m of this.stateSummary['property']) {
-  //       if(m.location) {
-  //         bounds.extend(new google.maps.LatLng(this.convertStringToNumber(m.location.lat), this.convertStringToNumber(m.location.lon)))
-  //       }
-  //     }
-  //     return bounds;
-  //   }
-  // }
 
 }
 

@@ -8,7 +8,7 @@
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
   (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m.name)">
-  <agm-info-window #infoWindow (infoWindowClose)="windowClosed()">
+  <agm-info-window #infoWindow (infoWindowClose)="mapWindowClosed(m.name)">
     <!-- <a routerLink="/asset/{{stateSummary?.state_code}}/{{stateSummary?.type_code}}/{{m?.name}}">{{m.name}}</a> -->
   <pre>
       Date: {{m.average_secdate}}
@@ -21,49 +21,4 @@
 </ng-container>
 </agm-map>
 
-<div *ngIf="assetDetail">
-  <div class="example-container mat-elevation-z8">
-    <mat-table #table [dataSource]="propDataSource">
-
-
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef class="header">{{header}}</mat-header-cell>
-        <mat-cell *matCellDef="let element"  class="name"> {{spaceAndCap(element.name)}}: </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="value">
-          <mat-header-cell *matHeaderCellDef class="hidden"></mat-header-cell>
-          <mat-cell *matCellDef="let element" class=""> {{element.value.lat ? element.value.lat+', '+element.value.lon : element.value}} </mat-cell>
-      </ng-container>
-
-
-
-      <mat-header-row *matHeaderRowDef="displayedColumns" (click)="propShowing = !propShowing"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!propShowing"></mat-row>
-    </mat-table>
-  </div>
-
-  <div class="example-container mat-elevation-z8">
-    <mat-table #table [dataSource]="assetDataSource">
-
-
-      <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef class="header">Asset</mat-header-cell>
-        <mat-cell *matCellDef="let element"  class="name"> {{spaceAndCap(element.name)}}: </mat-cell>
-      </ng-container>
-
-      <ng-container matColumnDef="value">
-          <mat-header-cell *matHeaderCellDef class="hidden"></mat-header-cell>
-          <mat-cell *matCellDef="let element" class=""> {{element.value}} </mat-cell>
-      </ng-container>
-
-
-
-      <mat-header-row *matHeaderRowDef="displayedColumns" (click)="assetShowing = !assetShowing"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!assetShowing"></mat-row>
-    </mat-table>
-  </div>
-</div>
-
-
-<!--pre>{{stateSummary|json}}</pre-->
+<app-asset-details *ngIf="name" [state]="state" [type]="type" [name]="name"></app-asset-details>
