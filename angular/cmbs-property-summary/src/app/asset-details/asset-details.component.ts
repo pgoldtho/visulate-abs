@@ -27,10 +27,6 @@ export class AssetDetailsComponent {
   propDataSource: MyDataSource;
   assetDataSource: MyDataSource;
 
-  lat: number = 51.678418;
-  lng: number = 7.809007;
-  coords: any;
-
   header: string;
 
   propShowing = false;
@@ -55,9 +51,6 @@ export class AssetDetailsComponent {
       this.indexService.getAssetDetails(state, useCode, name).subscribe( UsSummary => {
         this.assetDetail = UsSummary;
         let property = this.assetDetail[0]['property'];
-        this.coords = property.location;
-        this.lat = this.coords.lat;
-        this.lng = this.coords.lon;
         this.header = property.propertyName;
         this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
         this.property = this.property.filter(i => i.name !== 'location');

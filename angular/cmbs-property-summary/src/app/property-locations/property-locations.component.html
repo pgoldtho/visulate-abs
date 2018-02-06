@@ -8,8 +8,7 @@
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
   (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m.name)">
-  <agm-info-window #infoWindow (infoWindowClose)="mapWindowClosed(m.name)">
-    <!-- <a routerLink="/asset/{{stateSummary?.state_code}}/{{stateSummary?.type_code}}/{{m?.name}}">{{m.name}}</a> -->
+  <agm-info-window #infoWindow>
   <pre>
       Date: {{m.average_secdate}}
       NOI: ${{m.average_secnoi|number}}
