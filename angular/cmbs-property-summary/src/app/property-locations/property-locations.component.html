@@ -7,19 +7,17 @@
   <agm-marker  *ngIf="m.location"
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
-  (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow">
+  (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m.name)">
   <agm-info-window #infoWindow>
-    <a routerLink="/asset/{{stateSummary?.state_code}}/{{stateSummary?.type_code}}/{{m?.name}}">{{m.name}}</a>
-<pre>
-
-    Date: {{m.average_secdate}}
-    NOI: ${{m.average_secnoi|number}}
-    Valuation: ${{m.average_secvalue|number}}
-    Cap Rate: {{m.sec_caprate}}
-</pre>
+  <pre>
+      Date: {{m.average_secdate}}
+      NOI: ${{m.average_secnoi|number}}
+      Valuation: ${{m.average_secvalue|number}}
+      Cap Rate: {{m.sec_caprate}}
+  </pre>
   </agm-info-window>
 </agm-marker>
 </ng-container>
 </agm-map>
 
-<!--pre>{{stateSummary|json}}</pre-->
+<app-asset-details *ngIf="name" [state]="state" [type]="type" [name]="name"></app-asset-details>
