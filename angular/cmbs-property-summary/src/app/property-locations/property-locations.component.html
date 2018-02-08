@@ -2,8 +2,8 @@
 
 <!-- this creates a google map on the page with the given lat/lng from -->
 <!-- the component as the initial center of the map: -->
-<agm-map #gm [latitude]="lat" [longitude]="lng">
-  <ng-container *ngFor="let m of stateSummary?.property">
+<agm-map *ngIf="stateSummary" #gm (mapReady)="mapReady($event)">
+  <ng-container *ngFor="let m of stateSummary.property">
   <agm-marker  *ngIf="m.location"
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
