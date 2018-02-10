@@ -8,6 +8,7 @@ import { Observable } from "rxjs/Observable";
 import { CollectionViewer } from "@angular/cdk/collections";
 import { DataSource } from "@angular/cdk/collections";
 
+declare let google:any;
 
 @Component({
   selector: 'app-property-locations',
@@ -17,12 +18,7 @@ import { DataSource } from "@angular/cdk/collections";
 export class PropertyLocationsComponent implements OnInit {
   stateSummary: UsSummary[];
 
-  lat: number = 51.678418;
-  lng: number = 7.809007;
-
   header: string;
-
-  map: any;
 
   state: string;
   type: string;
@@ -46,13 +42,20 @@ export class PropertyLocationsComponent implements OnInit {
     this.route.params.subscribe(params => {
       var state = params['state'];
       var useCode = params['type_code'];
-      var centroid = this.indexService.getStateCentroid(state);
-      this.lat = centroid.lat;
-      this.lng = centroid.lng;
 
       this.indexService.getStateSummary(state, useCode)
       .subscribe(UsSummary => this.stateSummary = UsSummary);
     });
+  }
+
+  mapReady(map) {
+    let bounds = new google.maps.LatLngBounds();
+    for(let p of this.stateSummary['property']) {
+      if(p.location) {
+        bounds.extend({ lat: p.location.lat, lng: p.location.lon });
+      }
+    }
+    map.fitBounds(bounds);
   }
 
   showDetails(state, type, name) {
