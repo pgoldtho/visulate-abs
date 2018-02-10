@@ -8,7 +8,7 @@ import { Observable } from "rxjs/Observable";
 import { CollectionViewer } from "@angular/cdk/collections";
 import { DataSource } from "@angular/cdk/collections";
 
-declare const google;
+declare let google:any;
 
 @Component({
   selector: 'app-property-locations',
