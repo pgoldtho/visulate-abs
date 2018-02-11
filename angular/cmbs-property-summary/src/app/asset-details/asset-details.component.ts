@@ -28,6 +28,7 @@ export class AssetDetailsComponent {
   assetDataSource: MyDataSource;
 
   header: string;
+  assetHeader: string;
 
   propShowing = false;
   assetShowing = false;
@@ -51,11 +52,12 @@ export class AssetDetailsComponent {
       this.indexService.getAssetDetails(state, useCode, name).subscribe( UsSummary => {
         this.assetDetail = UsSummary;
         let property = this.assetDetail[0]['property'];
-        this.header = property.propertyName;
+        this.header = property.Property;
         this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
         this.property = this.property.filter(i => i.name !== 'location');
         this.propDataSource = new MyDataSource(this.property);
         let asset = this.assetDetail[0]['asset'];
+        this.assetHeader = asset['Original Loan'];
         this.asset = Object.keys(asset).map(k => ({ name: k, value: asset[k]}));
         this.assetDataSource = new MyDataSource(this.asset);
       });

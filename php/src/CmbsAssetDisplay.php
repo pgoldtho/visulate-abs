@@ -12,7 +12,102 @@ namespace CMBS;
  * @author pgoldtho
  */
 class CmbsAssetDisplay {
+    
+  public static function convertCamelcaseToSpaces($str) {
+        $formattedStr = '';
+        $re = '/
+          (?<=[a-z])
+          (?=[A-Z])
+        | (?<=[A-Z])
+          (?=[A-Z][a-z])
+        /x';
+        $a = preg_split($re, $str);
+        $formattedStr = implode(' ', $a);
+        return ucfirst($formattedStr);
+    }
 
+    public static function displayFormat($array) {
+        $formattedArray = array();
+        foreach ($array as $key => $value){
+            $newKey = self::convertCamelcaseToSpaces($key);
+            if ($newKey == 'Asset Type Number') { 
+                $newKey = 'Asset Type';
+            }
+            
+            $lastKeyWordStart = strrpos($newKey, ' ');
+            $lastKeyWord = substr($newKey, $lastKeyWordStart);
+            switch ($lastKeyWord) {
+                case ' Code':
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    $newValue = $value;
+                    break;
+                case ' Name':
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    $newValue = $value;
+                    break;
+                case ' Number':
+                    if ($newKey == 'Year Built Number'){
+                       $newValue = $value;
+                    } else {
+                        $newValue = number_format($value);
+                    }
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    break;                
+                case ' Amount':
+                    $newValue = '$'.number_format($value);
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    break;
+                case ' Percentage':
+                    if ($value < 1) {
+                        $value *= 100;
+                    }
+                    $newValue = $value."%";
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    break;
+                case ' Date':             
+                    if ($newKey != 'Valuation Securitization Date') {
+                        $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    } 
+                    $newValue = date_format(date_create_from_format('m-d-Y', $value), 'F d, Y');                    
+                    break;
+                case ' Indicator':
+                    if ($value == 'true') {
+                        $newValue = 'Yes';
+                    } else {
+                        $newValue = 'No';
+                    }
+                    $newKey = substr($newKey, 0, $lastKeyWordStart);
+                    break;
+                default:
+                    $newValue = $value;
+                    break;
+            }
+            
+            $formattedArray[$newKey] = $newValue;
+        }
+        return $formattedArray;
+    }
+    
+    
+    public static function formatAsset($asset) {
+        $formattedRecord = array(
+          "Accession Number" => $asset["accession_number"],
+          "Filer CIK" => $asset["filer_cik"],
+          "Depositor CIK" => $asset["depositor_cik"],
+          "Sponsor CIK" => $asset["sponsor_cik"],
+          "ABS Electronic Exhibits URL" => $asset["absEeUrl"],
+          "Filing URL" => $asset["filingUrl"],
+          "Sponsor File Number" => $asset["sponsor_file_no"],
+          "Filer File Number" => $asset["filer_file_no"]);
+        
+       
+        $formattedRecord['asset'] = self::displayFormat($asset['asset']);
+        $formattedRecord['property'] = self::displayFormat($asset['property']);
+        
+        return $formattedRecord;
+   
+    }
+  
     public static function decodeValue($codeType, $codeValue) {
         $codeIndex = ["ARM_INDX_CODE_TYPE" => [
                 "A" => "11 FHLB COFI  (1 Month)",
@@ -146,11 +241,11 @@ class CmbsAssetDisplay {
                 "12" => "Annually",
                 "365" => "Daily"],
             "PYMNT_FREQ_CODE_TYPE" => [
-                "1" => "monthly",
-                "3" => "quarterly",
-                "6" => "semi-annually",
-                "12" => "annually",
-                "365" => "daily"],
+                "1" => "Monthly",
+                "3" => "Quarterly",
+                "6" => "Semi-annually",
+                "12" => "Annually",
+                "365" => "Daily"],
             "PYMNT_STAT_LOAN_CODE_TYPE" => [
                 "0" => "Current",
                 "1" => "30-59 days delinquent",
@@ -161,13 +256,13 @@ class CmbsAssetDisplay {
                 "A" => "Payment not received but still in grace period or not yet due.",
                 "B" => "Late payment but less than 30 days delinquent"],
             "PYMNT_TYP_CODE_TYPE" => [
-                "1" => "fully Amortizing",
-                "2" => "amortizing Balloon",
+                "1" => "Fully Amortizing",
+                "2" => "Amortizing Balloon",
                 "3" => "Interest Only/Balloon",
                 "4" => "Interest Only/Amortizing",
                 "5" => "Interest Only/Amortizing/Balloon",
                 "6" => "Principal Only",
-                "7" => "hyper  Amortization",
+                "7" => "Hyper Amortization",
                 "98" => "Other"],
             "REPRCH_RPLCMNT_REASN_CODE_TYPE" => [
                 "1" => "Fraud",
@@ -305,6 +400,6 @@ class CmbsAssetDisplay {
         self::decodeAssetValues($asset, "property", "debtServiceCoverageSecuritizationCode", "DEBT_SRVC_CVRG_CODE_TYPE");
         self::decodeAssetValues($asset, "property", "mostRecentDebtServiceCoverageCode", "MST_RCNT_DEBT_SRVC_AMNT_CODE_TYPE");
         
-        return $asset;
+        return self::formatAsset($asset);
     }
 }
