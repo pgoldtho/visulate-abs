@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Observable } from "rxjs/Observable";
 import { CollectionViewer } from "@angular/cdk/collections";
@@ -19,11 +19,19 @@ declare let google:any;
 export class PropertyLocationsComponent implements OnInit {
   stateSummary: UsSummary[];
 
-  header: string;
   state: string;
   type: string;
   name: string;
   imgUrl: string;
+
+  states: UsSummary[] = [];
+  stateName: string;
+  types: any[] = [];
+  typeName: string;
+
+  map: any;
+  lastOpen: any;
+
 
   private convertStringToNumber(value: string): number {
     return +value;
@@ -32,7 +40,8 @@ export class PropertyLocationsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private location: Location,
-    private indexService: UsIndexService
+    private indexService: UsIndexService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -40,23 +49,38 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   addRouterSubscription(): void {
-    this.route.params.subscribe(params => {
-      var state = params['state'];
-      var useCode = params['type_code'];
-
-      this.indexService.getStateSummary(state, useCode)
-      .subscribe(UsSummary => this.stateSummary = UsSummary);
+    this.route.params.subscribe( params => {
+      this.state = params['state'];
+      this.type = params['type_code'];
+      this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
+        this.stateSummary = stateSummary;
+        if(this.map) {
+          this.setMapBounds();
+        }
+      });
+      if(this.name) {
+        this.name = null;
+      }
+      if(this.lastOpen) {
+        this.lastOpen = null;
+      }
     });
   }
 
+
   mapReady(map) {
+    this.map = map;
+    this.setMapBounds();
+  }
+
+  setMapBounds() {
     let bounds = new google.maps.LatLngBounds();
     for(let p of this.stateSummary['property']) {
       if(p.location) {
         bounds.extend({ lat: p.location.lat, lng: p.location.lon });
       }
     }
-    map.fitBounds(bounds);
+    this.map.fitBounds(bounds);
   }
 
 
