@@ -1,4 +1,9 @@
-<h1>{{ stateSummary?.state }} {{stateSummary?.type}}</h1>
+<p-dropdown [options]="states" optionLabel="name" [filter]="true"
+placeholder="{{stateName}}" (onChange)="onChangeState($event)"
+[(ngModel)]="state" [autoWidth]="true" [style]="{'width': 'calc(50% - 3px)'}" class="drop-menu"></p-dropdown>
+<p-dropdown [options]="types" optionLabel="usage_type" [filter]="true"
+placeholder="{{typeName}}" (onChange)="onChangeType($event)"
+[(ngModel)]="type" [autoWidth]="true" [style]="{'width': 'calc(50% - 3px)'}" class="drop-menu"></p-dropdown>
 
 <!-- this creates a google map on the page with the given lat/lng from -->
 <!-- the component as the initial center of the map: -->

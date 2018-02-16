@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Observable } from "rxjs/Observable";
 import { CollectionViewer } from "@angular/cdk/collections";
@@ -19,11 +19,19 @@ declare let google:any;
 export class PropertyLocationsComponent implements OnInit {
   stateSummary: UsSummary[];
 
-  header: string;
   state: string;
   type: string;
   name: string;
   imgUrl: string;
+
+  states: UsSummary[] = [];
+  stateName: string;
+  types: any[] = [];
+  typeName: string;
+
+  map: any;
+  lastOpen: any;
+
 
   private convertStringToNumber(value: string): number {
     return +value;
@@ -32,7 +40,8 @@ export class PropertyLocationsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private location: Location,
-    private indexService: UsIndexService
+    private indexService: UsIndexService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -40,23 +49,79 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   addRouterSubscription(): void {
-    this.route.params.subscribe(params => {
-      var state = params['state'];
-      var useCode = params['type_code'];
-
-      this.indexService.getStateSummary(state, useCode)
-      .subscribe(UsSummary => this.stateSummary = UsSummary);
+    this.route.params.subscribe( params => {
+      this.state = params['state'];
+      this.type = params['type_code'];
+      this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
+        this.stateSummary = stateSummary;
+        if(this.map) {
+          this.setMapBounds();
+        }
+      });
+      this.getStateData();
     });
   }
 
+  getStateData() {
+    this.indexService.getUsSummary().subscribe( usSummary => {
+      this.states = usSummary['state'].filter(i => i['name']);
+      this.states.forEach( state => {
+        if(''+state['state'] === this.state) {
+          this.stateName = state['name'];
+          this.types = state['usage'].filter(i => i['usage_type'] != null);
+          let typeName;
+          this.types.forEach( type => {
+            if(''+type['type_code'] === this.type) {
+              this.typeName = type['usage_type'];
+            }
+          });
+        }
+      });
+    });
+  }
+
+  onChangeState(event) {
+    this.state = event.value.state;
+    this.navigate();
+  }
+
+  onChangeType(event) {
+    this.type = event.value.type_code;
+    this.navigate();
+  }
+
+  navigate() {
+    if(this.name) {
+      this.name = null;
+    }
+    if(this.lastOpen) {
+      this.lastOpen = null;
+    }
+    this.states.forEach( state => {
+      if(''+state['state'] === this.state) {
+        let types = state['usage'].filter(i => i['usage_type']);
+        let typeCodes = types.map(i => i['type_code']);
+        if(typeCodes.indexOf(this.type) == -1) {
+          this.type = typeCodes[0];
+        }
+      }
+    });
+    this.router.navigateByUrl(`/locations/${this.state}/${this.type}`);
+  }
+
   mapReady(map) {
+    this.map = map;
+    this.setMapBounds();
+  }
+
+  setMapBounds() {
     let bounds = new google.maps.LatLngBounds();
     for(let p of this.stateSummary['property']) {
       if(p.location) {
         bounds.extend({ lat: p.location.lat, lng: p.location.lon });
       }
     }
-    map.fitBounds(bounds);
+    this.map.fitBounds(bounds);
   }
 
 
