@@ -1,12 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
-
-import { UsIndexService } from '../us-index.service';
-import { UsSummary } from '../us-summary';
 import { Observable } from "rxjs/Observable";
 import { CollectionViewer } from "@angular/cdk/collections";
 import { DataSource } from "@angular/cdk/collections";
+
+import { UsIndexService } from '../us-index.service';
+import { UsSummary } from '../us-summary';
+import { GOOGLE_MAPS_APIKEY } from '../constants';
 
 declare let google:any;
 
@@ -19,10 +20,10 @@ export class PropertyLocationsComponent implements OnInit {
   stateSummary: UsSummary[];
 
   header: string;
-
   state: string;
   type: string;
   name: string;
+  imgUrl: string;
 
   private convertStringToNumber(value: string): number {
     return +value;
@@ -58,10 +59,15 @@ export class PropertyLocationsComponent implements OnInit {
     map.fitBounds(bounds);
   }
 
-  showDetails(state, type, name) {
+
+
+  showDetails(state, type, marker) {
     this.state = state;
     this.type = type;
-    this.name = name;
+    this.name = marker.name;
+
+    this.imgUrl = 'https://maps.googleapis.com/maps/api/streetview?size=200x150&location=' +
+    marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
   }
 
   spaceAndCap(name: string) {

@@ -17,6 +17,8 @@ import { UsIndexService } from './us-index.service';
 import { AppRoutingModule } from './/app-routing.module';
 import { PropertyLocationsComponent } from './property-locations/property-locations.component';
 import { AssetDetailsComponent } from './asset-details/asset-details.component';
+import { GOOGLE_MAPS_APIKEY } from './constants';
+
 
 
 @NgModule({
@@ -39,11 +41,11 @@ import { AssetDetailsComponent } from './asset-details/asset-details.component';
     MatIconModule,
     AppRoutingModule,
     AgmCoreModule.forRoot({
-      apiKey: 'AIzaSyBMD21JpmlHER9Cdvi3mrA0vw8yQ6U5xS4'
+      apiKey: GOOGLE_MAPS_APIKEY
     }),
     MatTableModule
   ],
   providers: [UsIndexService],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
