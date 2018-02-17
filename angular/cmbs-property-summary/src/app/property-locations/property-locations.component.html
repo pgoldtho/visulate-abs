@@ -7,14 +7,14 @@
   <agm-marker  *ngIf="m.location"
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
-  (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m.name)">
+  (markerClick)="gm.lastOpen?.close(); gm.lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m)">
   <agm-info-window #infoWindow>
-  <pre>
-      Date: {{m.average_secdate}}
-      NOI: ${{m.average_secnoi|number}}
-      Valuation: ${{m.average_secvalue|number}}
-      Cap Rate: {{m.sec_caprate}}
-  </pre>
+    <h3>{{m.name}}</h3>
+      <img src="{{imgUrl}}"/>
+  <p>{{m.name}} had a net operating income of ${{m.average_secnoi|number}} on
+     {{m.average_secdate}}.  It was valued at ${{m.average_secvalue|number}}
+      giving it an unleveraged yield of {{m.sec_caprate}}%
+  </p>
   </agm-info-window>
 </agm-marker>
 </ng-container>
