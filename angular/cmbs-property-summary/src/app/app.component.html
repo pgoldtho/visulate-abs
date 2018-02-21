@@ -1,23 +1,25 @@
-<div class="navbar">
-    <a routerLink="/">
-      <img src="https://visulate.com/images/visulate-tiny.jpg"/>
-      <span>Visulate</span>  </a>
-</div>
-<div class="main">
+<mdb-navbar SideClass="navbar navbar-expand-lg navbar-light blue-grey lighten-5">
+    <logo><a class="navbar-brand" href="#">Visulate</a></logo>
+    <links [class.hidden]="!selectedType">
+        <div class="btn-group" dropdown>
+            <a dropdownToggle class="navdropbutton" mdbRippleRadius>
+                {{selectedState ? selectedState.name : 'Select state'}}
+                <i class="fa fa-caret-down" aria-hidden="true"></i>
+            </a>
+            <div class="dropdown-menu dropdown-primary dropselect">
+                <a *ngFor="let state of states" class="dropdown-item" (click)="onNavChange(state, 'state')">{{state.name}}</a>
+            </div>
+        </div>
+        <div class="btn-group" dropdown>
+            <a dropdownToggle class="navdropbutton" mdbRippleRadius>
+                {{selectedType ? selectedType.name : 'Select usage type'}}
+                <i class="fa fa-caret-down" aria-hidden="true"></i>
+            </a>
+            <div class="dropdown-menu dropdown-primary dropselect">
+                <a *ngFor="let type of types" class="dropdown-item" (click)="onNavChange(type, 'type')">{{type.name}}</a>
+            </div>
+        </div>
 
+    </links>
+</mdb-navbar>
 <router-outlet></router-outlet>
-</div>
-
-<!--div class="grid-container">
-  <app-us-index></app-us-index>
-<div style="width: 400px;">
-  <h1>{{ title }}</h1>
-  <app-us-index></app-us-index>
-</div>
-<div style="width: 600px;">
-<router-outlet></router-outlet>
-
-</div>
-
-
-</div-->

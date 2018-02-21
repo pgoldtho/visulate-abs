@@ -58,56 +58,15 @@ export class PropertyLocationsComponent implements OnInit {
           this.setMapBounds();
         }
       });
-      this.getStateData();
-    });
-  }
-
-  getStateData() {
-    this.indexService.getUsSummary().subscribe( usSummary => {
-      this.states = usSummary['state'].filter(i => i['name']);
-      this.states.forEach( state => {
-        if(''+state['state'] === this.state) {
-          this.stateName = state['name'];
-          this.types = state['usage'].filter(i => i['usage_type'] != null);
-          let typeName;
-          this.types.forEach( type => {
-            if(''+type['type_code'] === this.type) {
-              this.typeName = type['usage_type'];
-            }
-          });
-        }
-      });
-    });
-  }
-
-  onChangeState(event) {
-    this.state = event.value.state;
-    this.navigate();
-  }
-
-  onChangeType(event) {
-    this.type = event.value.type_code;
-    this.navigate();
-  }
-
-  navigate() {
-    if(this.name) {
-      this.name = null;
-    }
-    if(this.lastOpen) {
-      this.lastOpen = null;
-    }
-    this.states.forEach( state => {
-      if(''+state['state'] === this.state) {
-        let types = state['usage'].filter(i => i['usage_type']);
-        let typeCodes = types.map(i => i['type_code']);
-        if(typeCodes.indexOf(this.type) == -1) {
-          this.type = typeCodes[0];
-        }
+      if(this.name) {
+        this.name = null;
+      }
+      if(this.lastOpen) {
+        this.lastOpen = null;
       }
     });
-    this.router.navigateByUrl(`/locations/${this.state}/${this.type}`);
   }
+
 
   mapReady(map) {
     this.map = map;
