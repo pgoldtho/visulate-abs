@@ -14,7 +14,7 @@ body {
 }
 body, input[text], button {
   color: #888;
-  font-family: Cambria, Georgia;
+  /* font-family: Cambria, Georgia; */
 }
 /* everywhere else */
 * {
@@ -71,4 +71,22 @@ body, input[text], button {
 /* Main content */
 .main {
     margin-top: 60px; /* Add a top margin to avoid content overlay */
+}
+
+
+
+.hidden {
+  display: none !important;
+}
+
+.navdropbutton {
+  padding-right: 20px
+}
+
+.btn-group:hover>.dropdown-menu {
+  display: block;
+}
+
+a i {
+  font-family: 'FontAwesome' !important;
 }

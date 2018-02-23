@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+
 import { UsIndexService } from '../us-index.service';
 import { UsSummary } from '../us-summary';
-import { Router } from '@angular/router';
+import { SharedService } from "../shared.service";
+import { AppComponent } from "../app.component";
 
 interface UsState {
   name: string,
@@ -30,22 +33,20 @@ export class UsIndexComponent implements OnInit {
   stateUsageSummary: UsageSummary[];
   selectedUsage: UsageSummary;
 
-  constructor(private usIndexService: UsIndexService,
-              private router: Router) {}
+  constructor(
+    private usIndexService: UsIndexService,
+    private router: Router,
+    private sharedService: SharedService,
+    private appComponent: AppComponent
+    ) {}
 
   ngOnInit() {
-    this.getIndex();
-  }
-
-  populateStateStructures(usSummary: UsSummary[]): void {
-    this.usSummary = usSummary;
-    this.states = [];
-    for (let i in usSummary["state"]) {
-      if (usSummary["state"][i]["name"]) {
-        this.states.push({"name": usSummary["state"][i]["name"],
-                          "code": usSummary["state"][i]["state"]});
+    this.sharedService.statesObservable$.subscribe( data => {
+      if(data) {
+        this.usSummary = data[0];
+        this.states = data[1];
       }
-    }
+    });
   }
 
   getDisplaySummary(usageArray: UsageSummary[]): UsageSummary[] {
@@ -68,22 +69,17 @@ export class UsIndexComponent implements OnInit {
     return displaySummary;
   }
 
-  onChangeState(event){
+  onChangeState(state){
+    this.selectedState = state;
     for (let i in this.usSummary["state"]){
-      if (this.usSummary["state"][i]["state"] == event.value.code ) {
-        this.stateUsageSummary =
-            this.getDisplaySummary(this.usSummary["state"][i]["usage"]);
+      if (this.usSummary["state"][i]["state"] == state.code ) {
+        this.stateUsageSummary = this.getDisplaySummary(this.usSummary["state"][i]["usage"]);
       }
     }
   }
 
-  onRowSelect(event){
-    this.router.navigateByUrl(`/locations/${this.selectedState.code}/${event.data.type_code}`);
-  }
-
-  getIndex(): void {
-    this.usIndexService.getUsSummary()
-    .subscribe(UsSummary => this.populateStateStructures(UsSummary));
+  onRowSelect(useType){
+    this.appComponent.navigate(this.selectedState.code, useType.type_code);
   }
 
 }
