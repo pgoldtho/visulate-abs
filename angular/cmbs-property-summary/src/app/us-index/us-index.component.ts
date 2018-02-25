@@ -30,10 +30,7 @@ export class UsIndexComponent implements OnInit {
   selectedState: PrimeNgDropdown;
 
   usage: PrimeNgDropdown[];
-  selectUsage: PrimeNgDropdown;
-
   stateUsageSummary: UsageSummary[];
-  selectedUsage: UsageSummary;
 
   constructor(private usIndexService: UsIndexService,
               private router: Router) {}

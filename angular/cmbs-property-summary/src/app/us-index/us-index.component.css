@@ -73,6 +73,7 @@ table.datatable, table.datatable1 {
   position: fixed;
   top: 150px;
   left: 50px;
+  z-index: 10;
 
 }
 
@@ -85,6 +86,7 @@ table.datatable, table.datatable1 {
   position: fixed;
   top: 220px;
   width: 100%;
+  z-index: 5;
 }
 
 .text-cont {
