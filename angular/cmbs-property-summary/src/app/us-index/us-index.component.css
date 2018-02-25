@@ -62,3 +62,37 @@ table.datatable, table.datatable1 {
     border: 1px solid #a3a591;
     border-collapse: collapse;
 }
+
+.homepage {
+  height: calc(100vh - 80px);
+  background-image: url(../../assets/IMG_4033.jpg);
+  background-size: cover;
+}
+
+.homepage-form {
+  position: fixed;
+  top: 150px;
+  left: 50px;
+  z-index: 10;
+
+}
+
+@media screen and (max-width: 600px) {
+  .homepage-summary {
+    display: none;
+  }
+}
+.homepage-summary{
+  position: fixed;
+  top: 220px;
+  width: 100%;
+  z-index: 5;
+}
+
+.text-cont {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    color: #fff;
+    background-color: rgba(33,33,33,.3);
+}

@@ -1,68 +1,36 @@
-<p>Summary of properties used to collateralize commercial mortgage backed securities (CMBS) based on {{usSummary?.total|number}} records
-submitted to the Securities and Exchange Commission.</p>
+<div class="homepage">
 
-<p-dropdown [options]="states" optionLabel="name" [filter]="true"
-placeholder="Select a state" (onChange)="onChangeState($event)"
-[(ngModel)]="selectedState" [autoWidth]="true" [style]="{'width': '200px'}"></p-dropdown>
-<p>Selected State: {{selectedState ? selectedState.name : 'none'}}</p>
+  <div class="text-cont">
+    <h1>Visulate CMBS Asset Information</h1>
+    <p>Summary of properties used to collateralize commercial mortgage backed securities (CMBS) based on filings
+      submitted to the Securities and Exchange Commission.</p>
+    </div>
 
-<p-dataTable *ngIf="stateUsageSummary" [value]="stateUsageSummary" selectionMode="single"
-             (onRowSelect)="onRowSelect($event)" [responsive]="true"
-             [(selection)]="onSelectUsage" dataKey="type_code">
-    <p-column field="usage_type" header="Usage"></p-column>
-    <p-column  header="NOI" [style]="{'text-align': 'right'}">
-      <ng-template let-col let-data="rowData" pTemplate="body">
-        ${{data.average_secnoi|number}}
-      </ng-template>
-    </p-column>
-    <p-column field="average_secvalue" header="Value" [style]="{'text-align': 'right'}">
-      <ng-template let-col let-data="rowData" pTemplate="body">
-        ${{data.average_secvalue|number}}
-      </ng-template>
-    </p-column>
-    <p-column field="sec_caprate" header="Cap Rate" [style]="{'text-align': 'right'}"></p-column>
-</p-dataTable>
+    <div class="homepage-form">
+      <p-dropdown [options]="states" optionLabel="name" [filter]="true"
+      placeholder="Select a state" (onChange)="onChangeState($event)"
+      [(ngModel)]="selectedState" [autoWidth]="true" [style]="{'min-width': '200px'}"></p-dropdown>
+      <p-dropdown *ngIf="stateUsageSummary" [options]="usage"  optionLabel="name" [filter]="true"
+      placeholder="Select usage" (onChange)="onRowSelect($event)"
+      [(ngModel)]="selectedUsage" [autoWidth]="true" [style]="{'min-width': '200px'}"></p-dropdown>
+    </div>
 
-<!--div *ngFor="let s of usSummary?.state">
-<mat-expansion-panel *ngIf='s.name && s.name !== "Not Available"'>
-  <mat-expansion-panel-header>
-      {{s.name}}
-  </mat-expansion-panel-header>
-<p>Breakdown by usage of values on securitization.  Based on {{s.doc_count}} records with an average securitization date of
-   {{s.average_secdate}}</p>
-
-  <table class="datatable">
-    <thead><tr>
-      <th>&nbsp;</th><th colspan="3">Average</th></tr><tr>
-      <th>Usage</th>
-      <th>NOI</th>
-      <th>Property Value</th>
-
-      <th>Cap Rate</th>
-    </tr></thead>
-    <tbody *ngFor='let u of s.usage; let first = first'>
-      <tr *ngIf='first'>
-        <td>All ({{s.doc_count|number}})</td>
-        <td>${{s.average_secnoi|number}}</td>
-        <td>${{s.average_secvalue|number}}</td>
-        <td>{{s.sec_caprate}}</td>
-      </tr>
-
-    <tr  *ngIf='u.usage_type'>
-      <td><a routerLink="/locations/{{s.state}}/{{u.type_code}}"> {{u.usage_type}} </a>
-        ({{u.doc_count|number}})</td>
-      <td>${{u.average_secnoi|number}}</td>
-      <td>${{u.average_secvalue|number}}</td>
-      <td>{{u.sec_caprate}}</td>
-    </tr>
-
-
-  </tbody>
-  </table>
-
-
-  <mat-action-row>
-    <button mat-button>Click me</button>
-  </mat-action-row>
-</mat-expansion-panel>
-</div-->
+    <div class="homepage-summary">
+      <p-dataTable *ngIf="stateUsageSummary" [value]="stateUsageSummary" selectionMode="single"
+      (onRowSelect)="onRowSelect($event)" [responsive]="true"
+      [(selection)]="onSelectUsage" dataKey="type_code">
+      <p-column field="usage_type" header="Usage"></p-column>
+      <p-column  header="NOI" [style]="{'text-align': 'right'}">
+        <ng-template let-col let-data="rowData" pTemplate="body">
+          ${{data.average_secnoi|number}}
+        </ng-template>
+      </p-column>
+      <p-column field="average_secvalue" header="Value" [style]="{'text-align': 'right'}">
+        <ng-template let-col let-data="rowData" pTemplate="body">
+          ${{data.average_secvalue|number}}
+        </ng-template>
+      </p-column>
+      <p-column field="sec_caprate" header="Cap Rate" [style]="{'text-align': 'right'}"></p-column>
+    </p-dataTable>
+  </div>
+</div>
