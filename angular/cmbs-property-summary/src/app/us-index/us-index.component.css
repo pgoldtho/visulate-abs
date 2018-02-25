@@ -72,12 +72,18 @@ table.datatable, table.datatable1 {
 .homepage-form {
   position: fixed;
   top: 150px;
-  right: 50px
+  left: 50px;
+
 }
 
+@media screen and (max-width: 600px) {
+  .homepage-summary {
+    display: none;
+  }
+}
 .homepage-summary{
   position: fixed;
-  top: 200px;
+  top: 220px;
   width: 100%;
 }
 

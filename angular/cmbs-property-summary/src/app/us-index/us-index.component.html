@@ -9,7 +9,10 @@
     <div class="homepage-form">
       <p-dropdown [options]="states" optionLabel="name" [filter]="true"
       placeholder="Select a state" (onChange)="onChangeState($event)"
-      [(ngModel)]="selectedState" [autoWidth]="true" [style]="{'width': '200px'}"></p-dropdown>
+      [(ngModel)]="selectedState" [autoWidth]="true" [style]="{'min-width': '200px'}"></p-dropdown>
+      <p-dropdown *ngIf="stateUsageSummary" [options]="usage"  optionLabel="name" [filter]="true"
+      placeholder="Select usage" (onChange)="onRowSelect($event)"
+      [(ngModel)]="selectedUsage" [autoWidth]="true" [style]="{'min-width': '200px'}"></p-dropdown>
     </div>
 
     <div class="homepage-summary">
@@ -29,5 +32,5 @@
       </p-column>
       <p-column field="sec_caprate" header="Cap Rate" [style]="{'text-align': 'right'}"></p-column>
     </p-dataTable>
-   </div>
+  </div>
 </div>

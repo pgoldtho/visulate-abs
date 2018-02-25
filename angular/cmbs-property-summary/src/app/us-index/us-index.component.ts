@@ -3,7 +3,7 @@ import { UsIndexService } from '../us-index.service';
 import { UsSummary } from '../us-summary';
 import { Router } from '@angular/router';
 
-interface UsState {
+interface PrimeNgDropdown {
   name: string,
   code: string
 }
@@ -17,6 +17,8 @@ interface UsageSummary {
   sec_caprate: string
 }
 
+
+
 @Component({
   selector: 'app-us-index',
   templateUrl: './us-index.component.html',
@@ -24,8 +26,11 @@ interface UsageSummary {
 })
 export class UsIndexComponent implements OnInit {
   usSummary: UsSummary[];
-  states: UsState[];
-  selectedState: UsState;
+  states: PrimeNgDropdown[];
+  selectedState: PrimeNgDropdown;
+
+  usage: PrimeNgDropdown[];
+  selectUsage: PrimeNgDropdown;
 
   stateUsageSummary: UsageSummary[];
   selectedUsage: UsageSummary;
@@ -52,20 +57,31 @@ export class UsIndexComponent implements OnInit {
     var displaySummary = [];
     for (let i in usageArray) {
       if (usageArray[i].usage_type) {
-      //  var d = filter('currency')(usageArray[i].average_secnoi, '$', 0);
         displaySummary.push({
           "type_code": usageArray[i].type_code,
           "usage_type": usageArray[i].usage_type,
           "doc_count": usageArray[i].doc_count,
-        //  "average_secnoi": $filter('currency')(usageArray[i].average_secnoi, '$', 0),
-        "average_secnoi": usageArray[i].average_secnoi,
+          "average_secnoi": usageArray[i].average_secnoi,
           "average_secvalue": usageArray[i].average_secvalue,
           "sec_caprate": usageArray[i].sec_caprate}
-
           );
+
       }
     }
     return displaySummary;
+  }
+
+  getUsageValues(usageArray: UsageSummary[]): PrimeNgDropdown[] {
+    var dropDownValues = [];
+    for (let i in usageArray) {
+      if (usageArray[i].usage_type) {
+        dropDownValues.push ({
+          "name" : usageArray[i].usage_type,
+          "code" : usageArray[i].type_code
+        });
+      }
+    }
+    return dropDownValues;
   }
 
   onChangeState(event){
@@ -73,12 +89,17 @@ export class UsIndexComponent implements OnInit {
       if (this.usSummary["state"][i]["state"] == event.value.code ) {
         this.stateUsageSummary =
             this.getDisplaySummary(this.usSummary["state"][i]["usage"]);
+        this.usage = this.getUsageValues(this.usSummary["state"][i]["usage"]);
       }
     }
   }
 
   onRowSelect(event){
-    this.router.navigateByUrl(`/locations/${this.selectedState.code}/${event.data.type_code}`);
+    if (event.type === 'row') {
+       this.router.navigateByUrl(`/locations/${this.selectedState.code}/${event.data.type_code}`);
+     } else {
+        this.router.navigateByUrl(`/locations/${this.selectedState.code}/${event.value.code}`);
+     }
   }
 
   getIndex(): void {
