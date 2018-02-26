@@ -1,98 +1,33 @@
-p {
-  text-align: left;
-}
-
-/* Tables
--------------------------------------------------------------- */
-
-td, th {
-    font: 0.9em Tahoma Arial, Helvetica, sans-serif;
-}
-
-td.current {
-    background-color: #7bb347;
-}
-
-.layouttable td {
-    vertical-align: top;
-}
-
-table.datatable, table.datatable1 {
-    width: 100%;
-    border-style: solid none none solid;
-    border-width: 1px;
-    border-color: #ccc;
-    margin: 0 0 20px 0;
-    padding: 0;
-    border-collapse: collapse;
-}
-
-.datatable td, .datatable1 td {
-    border-style: none solid solid none;
-    border-width: 1px;
-    border-color: #ccc;
-    text-align: right;
-    padding: 4px 2px 4px 2px;
-}
-
-/* th_back3 */
-.datatable th, .datatable1 th {
-    border-style: none solid solid none;
-    border-width: 1px;
-    border-color: #ccc;
-    background-color: #e7e7e7;
-    color: #383838;
-    font-weight: bold;
-    text-align: center;
-    padding: 4px 2px 4px 2px;
-}
-
-
-
-.datatable th td {
-    border: none;
-}
-
-.datatable caption {
-    font: bold 1.0em Tahoma, Arial, Helvetica, sans-serif;
-    background-color: #ccc;
-    color: #fff;
-    padding: 4px 2px;
-    margin: 0 0 0 -1px;
-    border: 1px solid #a3a591;
-    border-collapse: collapse;
-}
-
 .homepage {
-  height: calc(100vh - 80px);
+  height: calc(100vh - 56px);
   background-image: url(../../assets/IMG_4033.jpg);
   background-size: cover;
 }
 
 .homepage-form {
-  position: fixed;
-  top: 150px;
-  left: 50px;
-  z-index: 10;
-
+  padding-top: 94px;
+  padding-left: 50px;
 }
 
 @media screen and (max-width: 600px) {
   .homepage-summary {
     display: none;
   }
+  .homepage-form {
+    padding-left: 0;
+    text-align: center;
+  }
 }
+
 .homepage-summary{
-  position: fixed;
-  top: 220px;
-  width: 100%;
-  z-index: 5;
+  background-color: white;
 }
 
 .text-cont {
-    position: fixed;
-    bottom: 20px;
-    width: 100%;
-    color: #fff;
-    background-color: rgba(33,33,33,.3);
+  position: fixed;
+  bottom: 20px;
+  width: 100%;
+  color: #fff;
+  background-color: rgba(33,33,33,.3);
+  padding: 10px;
 }

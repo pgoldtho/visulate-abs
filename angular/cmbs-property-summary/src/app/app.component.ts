@@ -6,12 +6,7 @@ import { UsIndexService } from "./us-index.service";
 import { Observable } from "rxjs/Observable";
 import { SharedService } from "./shared.service";
 
-interface UsState {
-  name: string,
-  code: string
-}
-
-interface UseType {
+interface DropdownValue {
   name: string,
   code: string
 }
@@ -26,11 +21,11 @@ export class AppComponent implements OnInit {
 
   usSummary: UsSummary[];
 
-  states: UsState[];
-  selectedState: UsState;
+  states: DropdownValue[];
+  selectedState: DropdownValue;
 
-  types: UseType[];
-  selectedType: UseType;
+  types: DropdownValue[];
+  selectedType: DropdownValue;
 
   constructor(
     private router: Router,

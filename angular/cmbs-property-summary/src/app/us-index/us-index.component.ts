@@ -6,7 +6,7 @@ import { UsSummary } from '../us-summary';
 import { SharedService } from "../shared.service";
 import { AppComponent } from "../app.component";
 
-interface PrimeNgDropdown {
+interface DropdownValue {
   name: string,
   code: string
 }
@@ -20,8 +20,6 @@ interface UsageSummary {
   sec_caprate: string
 }
 
-
-
 @Component({
   selector: 'app-us-index',
   templateUrl: './us-index.component.html',
@@ -29,10 +27,10 @@ interface UsageSummary {
 })
 export class UsIndexComponent implements OnInit {
   usSummary: UsSummary[];
-  states: PrimeNgDropdown[];
-  selectedState: PrimeNgDropdown;
+  states: DropdownValue[];
+  selectedState: DropdownValue;
 
-  usage: PrimeNgDropdown[];
+  usage: DropdownValue[];
   stateUsageSummary: UsageSummary[];
 
   constructor(
@@ -61,9 +59,8 @@ export class UsIndexComponent implements OnInit {
           "doc_count": usageArray[i].doc_count,
           "average_secnoi": usageArray[i].average_secnoi,
           "average_secvalue": usageArray[i].average_secvalue,
-          "sec_caprate": usageArray[i].sec_caprate}
-          );
-
+          "sec_caprate": usageArray[i].sec_caprate
+        });
       }
     }
     return displaySummary;
@@ -73,13 +70,28 @@ export class UsIndexComponent implements OnInit {
     this.selectedState = state;
     for (let i in this.usSummary["state"]){
       if (this.usSummary["state"][i]["state"] == state.code ) {
-        this.stateUsageSummary = this.getDisplaySummary(this.usSummary["state"][i]["usage"]);
+        let usage = this.usSummary["state"][i]["usage"];
+        this.stateUsageSummary = this.getDisplaySummary(usage);
+        this.usage = this.getUsageValues(usage);
       }
     }
   }
 
-  onRowSelect(useType){
-    this.appComponent.navigate(this.selectedState.code, useType.type_code);
+  getUsageValues(usageArray: UsageSummary[]): DropdownValue[] {
+    var dropDownValues = [];
+    for (let i in usageArray) {
+      if (usageArray[i].usage_type) {
+        dropDownValues.push ({
+          "name" : usageArray[i].usage_type,
+          "code" : usageArray[i].type_code
+        });
+      }
+    }
+    return dropDownValues;
+  }
+
+  onRowSelect(usageCode){
+    this.appComponent.navigate(this.selectedState.code, usageCode);
   }
 
 }

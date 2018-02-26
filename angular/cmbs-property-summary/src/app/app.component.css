@@ -1,80 +1,3 @@
-/* Application-wide Styles */
-h1 {
-  color: #369;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 250%;
-}
-h2, h3 {
-  color: #444;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: lighter;
-}
-body {
-  margin: 2em;
-}
-body, input[text], button {
-  color: #888;
-  /* font-family: Cambria, Georgia; */
-}
-/* everywhere else */
-* {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.grid-container {
-  display: grid;
-  grid-template-columns: auto auto auto;
-  padding: 10px;
-}
-.grid-item {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(0, 0, 0, 0.8);
-  padding: 20px;
-  font-size: 30px;
-  text-align: center;
-}
-
-/* The navigation bar */
-.navbar {
-    overflow: hidden;
-    background-color: #f8f8f8;
-    position: fixed; /* Set the navbar to fixed position */
-    top: 0; /* Position the navbar at the top of the page */
-    width: 100%; /* Full width */
-    height: 50px;
-    line-height: 50px;
-    z-index: 1;
-    right: 0;
-}
-
-/* Links inside the navbar */
-.navbar a {
-    float: left;
-    display: block;
-    color: #777;
-    text-align: center;
-    text-decoration: none;
-}
-
-.navbar span {
-  position: absolute;
-  top: 5px;
-  left: 55px;
-}
-
-/* Change background on mouse-over */
-.navbar a:hover {
-    background: #ddd;
-    color: black;
-}
-
-/* Main content */
-.main {
-    margin-top: 60px; /* Add a top margin to avoid content overlay */
-}
-
-
-
 .hidden {
   display: none !important;
 }
@@ -83,9 +6,6 @@ body, input[text], button {
   padding-right: 20px
 }
 
-.btn-group:hover>.dropdown-menu {
-  display: block;
-}
 
 a i {
   font-family: 'FontAwesome' !important;

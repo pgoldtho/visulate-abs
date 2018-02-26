@@ -1,30 +1,45 @@
-<p>Summary of properties used to collateralize commercial mortgage backed securities (CMBS) based on {{usSummary?.total|number}} records
-submitted to the Securities and Exchange Commission.</p>
+<div class="homepage">
+  <div class="text-cont">
+    <h1>Visulate CMBS Asset Information</h1>
+    <p>Summary of properties used to collateralize commercial mortgage backed securities (CMBS) based on filings
+      submitted to the Securities and Exchange Commission.</p>
+  </div>
 
-<div *ngIf="usSummary" class="btn-group" dropdown>
-    <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
+  <div class="homepage-form">
+    <div *ngIf="usSummary" class="btn-group" dropdown>
+      <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
         {{selectedState ? selectedState.name : 'Select state'}}
-    </button>
-    <div class="dropdown-menu dropdown-primary dropselect">
+      </button>
+      <div class="dropdown-menu dropdown-primary dropselect">
         <a *ngFor="let state of states" class="dropdown-item" (click)="onChangeState(state)">{{state.name}}</a>
+      </div>
     </div>
-</div>
+    <div *ngIf="stateUsageSummary" class="btn-group" dropdown>
+      <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
+        Select usage
+      </button>
+      <div class="dropdown-menu dropdown-primary dropselect">
+        <a *ngFor="let useType of usage" class="dropdown-item" (click)="onRowSelect(useType.code)">{{useType.name}}</a>
+      </div>
+    </div>
+  </div>
 
-<table *ngIf="stateUsageSummary" class="table">
-  <thead>
-    <tr>
-      <th>Usage</th>
-      <th>NOI</th>
-      <th>Value</th>
-      <th>Cap Rate</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let useType of stateUsageSummary" (click)="onRowSelect(useType)">
-      <th scope="row">{{useType.usage_type}}</th>
-      <td>${{useType.average_secnoi|number}}</td>
-      <td>${{useType.average_secvalue|number}}</td>
-      <td>{{useType.sec_caprate}}
-    </tr>
-  </tbody>
-</table>
+  <table *ngIf="stateUsageSummary" class="table homepage-summary">
+    <thead>
+      <tr>
+        <th>Usage</th>
+        <th>NOI</th>
+        <th>Value</th>
+        <th>Cap Rate</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let useType of stateUsageSummary" (click)="onRowSelect(useType.type_code)">
+        <th scope="row">{{useType.usage_type}}</th>
+        <td>${{useType.average_secnoi|number}}</td>
+        <td>${{useType.average_secvalue|number}}</td>
+        <td>{{useType.sec_caprate}}
+      </tr>
+    </tbody>
+  </table>
+</div>

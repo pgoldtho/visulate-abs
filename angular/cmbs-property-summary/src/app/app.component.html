@@ -1,25 +1,28 @@
-<mdb-navbar SideClass="navbar navbar-expand-lg navbar-light blue-grey lighten-5">
-    <logo><a class="navbar-brand" href="#">Visulate</a></logo>
-    <links [class.hidden]="!selectedType">
-        <div class="btn-group" dropdown>
-            <a dropdownToggle class="navdropbutton" mdbRippleRadius>
-                {{selectedState ? selectedState.name : 'Select state'}}
-                <i class="fa fa-caret-down" aria-hidden="true"></i>
-            </a>
-            <div class="dropdown-menu dropdown-primary dropselect">
-                <a *ngFor="let state of states" class="dropdown-item" (click)="onNavChange(state, 'state')">{{state.name}}</a>
-            </div>
-        </div>
-        <div class="btn-group" dropdown>
-            <a dropdownToggle class="navdropbutton" mdbRippleRadius>
-                {{selectedType ? selectedType.name : 'Select usage type'}}
-                <i class="fa fa-caret-down" aria-hidden="true"></i>
-            </a>
-            <div class="dropdown-menu dropdown-primary dropselect">
-                <a *ngFor="let type of types" class="dropdown-item" (click)="onNavChange(type, 'type')">{{type.name}}</a>
-            </div>
-        </div>
+<mdb-navbar SideClass="navbar navbar-expand navbar-light blue-grey lighten-5">
+  <logo><a class="navbar-brand" href="#">
+    <img src="../assets/visulate-tiny.png" height="30" class="d-inline-block align-top" alt="">
+    Visulate
+  </a></logo>
+  <links [class.hidden]="!selectedType">
+    <div class="btn-group" dropdown>
+      <a dropdownToggle class="navdropbutton" mdbRippleRadius>
+        {{selectedState ? selectedState.name : 'Select state'}}
+        <i class="fa fa-caret-down" aria-hidden="true"></i>
+      </a>
+      <div class="dropdown-menu dropdown-primary dropselect">
+        <a *ngFor="let state of states" class="dropdown-item" (click)="onNavChange(state, 'state')">{{state.name}}</a>
+      </div>
+    </div>
+    <div class="btn-group" dropdown>
+      <a dropdownToggle class="navdropbutton" mdbRippleRadius>
+        {{selectedType ? selectedType.name : 'Select usage type'}}
+        <i class="fa fa-caret-down" aria-hidden="true"></i>
+      </a>
+      <div class="dropdown-menu dropdown-primary dropselect">
+        <a *ngFor="let type of types" class="dropdown-item" (click)="onNavChange(type, 'type')">{{type.name}}</a>
+      </div>
+    </div>
 
-    </links>
+  </links>
 </mdb-navbar>
 <router-outlet></router-outlet>
