@@ -58,14 +58,14 @@ export class AppComponent implements OnInit {
           if(data) {
             this.usSummary = data[0];
             this.states = data[1];
-            this.getStateData(params.state, params.type_code);
+            this.setStateData(params.state, params.type_code);
           }
         });
       }
     });
   }
 
-  getStateData(stateCode, typeCode) {
+  setStateData(stateCode, typeCode) {
     this.usSummary["state"].forEach( state => {
       if(state.state === stateCode) {
         this.selectedState = { "name": state.name, "code": state.state };
