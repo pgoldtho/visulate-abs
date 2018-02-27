@@ -91,10 +91,10 @@ export class AppComponent implements OnInit {
   onNavChange(event, eventType) {
     switch(eventType) {
       case 'state':
-        this.getStateData(event.code, this.selectedType.code);
+        this.setStateData(event.code, this.selectedType.code);
         break;
       case 'type':
-        this.getStateData(this.selectedState.code, event.code);
+        this.setStateData(this.selectedState.code, event.code);
     }
     this.navigate(this.selectedState.code, this.selectedType.code);
   }
