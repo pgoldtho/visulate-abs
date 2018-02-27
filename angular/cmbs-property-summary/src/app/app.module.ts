@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { AgmCoreModule } from '@agm/core';
 import { DropdownModule, DataTableModule, SharedModule} from 'primeng/primeng';
+import { MDBBootstrapModule } from 'angular-bootstrap-md';
 
 
 import { AppComponent } from './app.component';
@@ -43,7 +44,8 @@ import { GOOGLE_MAPS_APIKEY } from './constants';
     AgmCoreModule.forRoot({
       apiKey: GOOGLE_MAPS_APIKEY
     }),
-    MatTableModule
+    MatTableModule,
+    MDBBootstrapModule.forRoot()
   ],
   providers: [UsIndexService],
   bootstrap: [AppComponent]
