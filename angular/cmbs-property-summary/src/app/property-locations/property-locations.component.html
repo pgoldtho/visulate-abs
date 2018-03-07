@@ -1,21 +1,37 @@
 <!-- this creates a google map on the page with the given lat/lng from -->
 <!-- the component as the initial center of the map: -->
-<agm-map *ngIf="stateSummary" #gm (mapReady)="mapReady($event)">
-  <ng-container *ngFor="let m of stateSummary.property">
-  <agm-marker  *ngIf="m.location"
+<agm-map *ngIf="properties" #gm (mapReady)="mapReady($event)">
+  <ng-container *ngFor="let m of properties">
+  <agm-marker
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
-  (markerClick)="lastOpen?.close(); lastOpen = infoWindow; showDetails(stateSummary.state_code, stateSummary.type_code, m)">
-  <agm-info-window #infoWindow>
-    <h3>{{m.name}}</h3>
-      <img src="{{imgUrl}}"/>
-  <p>{{m.name}} had a net operating income of ${{m.average_secnoi|number}} on
-     {{m.average_secdate}}.  It was valued at ${{m.average_secvalue|number}}
-      with a cap rate of {{m.sec_caprate}}%
-  </p>
-  </agm-info-window>
-</agm-marker>
+  (markerClick)="showDetails(state, type, m)">
+    <agm-info-window #infoWindow [isOpen]="name === m.name">
+      <h3>{{m.name}}</h3>
+      <img class="streetview-image" src="{{imgUrl}}"/>
+      <p>{{m.name}} had a net operating income of ${{m.average_secnoi|number}} on
+         {{m.average_secdate}}.  It was valued at ${{m.average_secvalue|number}}
+          with a cap rate of {{m.sec_caprate}}%
+      </p>
+    </agm-info-window>
+  </agm-marker>
 </ng-container>
 </agm-map>
 
-<app-asset-details *ngIf="name" [state]="state" [type]="type" [name]="name"></app-asset-details>
+<div *ngIf="properties && !name" class="properties-container">
+  <h5>{{properties.length}} Summaries</h5>
+  <div class="list-container">
+    <table class="table">
+      <tbody>
+        <tr *ngFor="let p of properties" (click)="showDetails(state, type, p)">
+          <th>{{p.name}}</th>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div *ngIf="name" class="details">
+  <i class="fa fa-arrow-left" aria-hidden="true" (click)="name = null; setMapBounds();"></i>
+  <app-asset-details [state]="state" [type]="type" [name]="name"></app-asset-details>
+</div>

@@ -1,7 +1,34 @@
 agm-map {
-  height: 50vh;
+  height: calc(50% - 28px);
+  display: inline;
 }
 
-.drop-menu {
-  font-size: 20px;
+h5 {
+  color: rgba(0,0,0,.54);
+  font-weight: 500;
+  margin: 0;
+  padding-top: 18px;
+  padding-bottom: 18px;
+  padding-left: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.properties-container {
+  height: calc(50% - 28px);
+}
+
+.list-container {
+  height: calc(100% - 61px);
+  overflow: scroll;
+}
+
+.details i {
+  color: rgba(0,0,0,.54);
+  font-size: 30px;
+  margin: 15px;
+}
+
+.streetview-image {
+  width: 200px;
+  height: 150px;
 }
