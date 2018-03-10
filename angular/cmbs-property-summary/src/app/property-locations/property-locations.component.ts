@@ -52,6 +52,7 @@ export class PropertyLocationsComponent implements OnInit {
         if(this.map) {
           this.setMapBounds();
         }
+        console.log(this.properties);
       });
       if(this.name) {
         this.name = null;
@@ -78,9 +79,11 @@ export class PropertyLocationsComponent implements OnInit {
     this.type = type;
     this.name = marker.name;
 
-
     this.imgUrl = 'https://maps.googleapis.com/maps/api/streetview?size=200x150&location=' +
     marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
+
+    this.map.setCenter({ lat: marker.location.lat, lng: marker.location.lon });
+    this.map.setZoom(15);
   }
 
 }
