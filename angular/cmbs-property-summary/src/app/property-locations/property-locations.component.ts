@@ -6,10 +6,9 @@ import { CollectionViewer } from "@angular/cdk/collections";
 import { DataSource } from "@angular/cdk/collections";
 
 import { UsIndexService } from '../us-index.service';
-import { UsSummary } from '../us-summary';
 import { GOOGLE_MAPS_APIKEY } from '../constants';
 
-declare let google:any;
+declare let google: any;
 
 @Component({
   selector: 'app-property-locations',
@@ -17,20 +16,16 @@ declare let google:any;
   styleUrls: ['./property-locations.component.css']
 })
 export class PropertyLocationsComponent implements OnInit {
-  stateSummary: UsSummary[];
 
   state: string;
   type: string;
   name: string;
   imgUrl: string;
 
-  states: UsSummary[] = [];
-  stateName: string;
-  types: any[] = [];
-  typeName: string;
-
   map: any;
-  lastOpen: any;
+
+
+  properties: any[];
 
 
   private convertStringToNumber(value: string): number {
@@ -53,16 +48,13 @@ export class PropertyLocationsComponent implements OnInit {
       this.state = params['state'];
       this.type = params['type_code'];
       this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
-        this.stateSummary = stateSummary;
+        this.properties = stateSummary['property'].filter(i => i.location);
         if(this.map) {
           this.setMapBounds();
         }
       });
       if(this.name) {
         this.name = null;
-      }
-      if(this.lastOpen) {
-        this.lastOpen = null;
       }
     });
   }
@@ -74,16 +66,13 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   setMapBounds() {
-    let bounds = new google.maps.LatLngBounds();
-    for(let p of this.stateSummary['property']) {
-      if(p.location) {
-        bounds.extend({ lat: p.location.lat, lng: p.location.lon });
-      }
+    let bounds =  new google.maps.LatLngBounds();
+    for(let p of this.properties) {
+      bounds.extend({ lat: p.location.lat, lng: p.location.lon });
     }
+    this.map.setOptions({maxZoom: 7});
     this.map.fitBounds(bounds);
   }
-
-
 
   showDetails(state, type, marker) {
     this.state = state;
@@ -92,11 +81,10 @@ export class PropertyLocationsComponent implements OnInit {
 
     this.imgUrl = 'https://maps.googleapis.com/maps/api/streetview?size=200x150&location=' +
     marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
-  }
 
-  spaceAndCap(name: string) {
-    let result = name.replace(/[A-Z]/g, c => ' '+c);
-    return result.replace(result.substring(0, 1), result.substring(0, 1).toUpperCase());
+    this.map.setCenter({ lat: marker.location.lat, lng: marker.location.lon });
+    this.map.setOptions({maxZoom: null});
+    this.map.setZoom(15);
   }
 
 }
