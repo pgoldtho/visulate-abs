@@ -70,8 +70,12 @@ export class PropertyLocationsComponent implements OnInit {
     for(let p of this.properties) {
       bounds.extend({ lat: p.location.lat, lng: p.location.lon });
     }
-    this.map.setOptions({maxZoom: 7});
     this.map.fitBounds(bounds);
+    google.maps.event.addListenerOnce(this.map, 'idle', () => {
+      if(this.map.getZoom() > 7) {
+        this.map.setZoom(7);
+      }
+    });
   }
 
   showDetails(state, type, marker) {
@@ -83,7 +87,6 @@ export class PropertyLocationsComponent implements OnInit {
     marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
 
     this.map.setCenter({ lat: marker.location.lat, lng: marker.location.lon });
-    this.map.setOptions({maxZoom: null});
     this.map.setZoom(15);
   }
 
