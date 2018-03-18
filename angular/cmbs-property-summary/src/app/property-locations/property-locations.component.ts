@@ -21,12 +21,11 @@ export class PropertyLocationsComponent implements OnInit {
   type: string;
   name: string;
   imgUrl: string;
-
-  map: any;
-
-
   properties: any[];
 
+  map: any;
+  zoom: any;
+  center: any;
 
   private convertStringToNumber(value: string): number {
     return +value;
@@ -47,6 +46,8 @@ export class PropertyLocationsComponent implements OnInit {
     this.route.params.subscribe( params => {
       this.state = params['state'];
       this.type = params['type_code'];
+      this.zoom = null;
+      this.center = null;
       this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
         this.properties = stateSummary['property'].filter(i => i.location);
         if(this.map) {
@@ -66,12 +67,21 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   setMapBounds() {
-    let bounds =  new google.maps.LatLngBounds();
-    for(let p of this.properties) {
-      bounds.extend({ lat: p.location.lat, lng: p.location.lon });
+    if(this.zoom && this.center) {
+      this.map.setZoom(this.zoom);
+      this.map.setCenter(this.center);
+    } else {
+      let bounds =  new google.maps.LatLngBounds();
+      for(let p of this.properties) {
+        bounds.extend({ lat: p.location.lat, lng: p.location.lon });
+      }
+      this.map.fitBounds(bounds);
+      google.maps.event.addListenerOnce(this.map, 'idle', () => {
+        if(this.map.getZoom() > 7) {
+          this.map.setZoom(7);
+        }
+      });
     }
-    this.map.setOptions({maxZoom: 7});
-    this.map.fitBounds(bounds);
   }
 
   showDetails(state, type, marker) {
@@ -81,9 +91,9 @@ export class PropertyLocationsComponent implements OnInit {
 
     this.imgUrl = 'https://maps.googleapis.com/maps/api/streetview?size=200x150&location=' +
     marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
-
+    this.zoom = this.map.getZoom();
+    this.center = this.map.getCenter();
     this.map.setCenter({ lat: marker.location.lat, lng: marker.location.lon });
-    this.map.setOptions({maxZoom: null});
     this.map.setZoom(15);
   }
 
