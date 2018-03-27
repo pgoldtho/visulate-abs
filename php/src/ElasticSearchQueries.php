@@ -26,7 +26,7 @@ class ElasticSearchQueries {
         ];
 
         $response = $client->search($params);
-        return $response;  
+        return $response;
     }
 
     public static function getUsSummary(){
@@ -52,7 +52,7 @@ class ElasticSearchQueries {
         },
         "average_secdate": {
           "avg": {
-            "field": "property.valuationSecuritizationDate"       
+            "field": "property.valuationSecuritizationDate"
           }
         },
         "average_curvalue": {
@@ -90,22 +90,22 @@ class ElasticSearchQueries {
 }';
      return self::execQuery($queryStr);
    }
-   
+
    public static function getTypeSummary($state, $type){
        $queryStr = '{
   "query": {
     "bool": {
         "filter": [
     {"term": {"property.propertyState": "'.$state.'"}},
-    {"term": {"property.propertyTypeCode": "'.$type.'"}}    
+    {"term": {"property.propertyTypeCode": "'.$type.'"}}
     ]
     }
-  }, 
-  "size": 0, 
+  },
+  "size": 0,
   "aggs": {
     "property_name": {
       "terms": {
-        "field": "property.propertyName", 
+        "field": "property.propertyName",
         "size": 10000
       },
       "aggs": {
@@ -121,18 +121,26 @@ class ElasticSearchQueries {
         },
         "average_secdate": {
           "avg": {
-            "field": "property.valuationSecuritizationDate"       
+            "field": "property.valuationSecuritizationDate"
           }
         },
         "centroid" : {
             "geo_centroid" : {
-                "field" : "property.location" 
+                "field" : "property.location"
             }
+        },
+        "city" : {
+          	"terms": {
+          		"field": "property.propertyCity",
+          		"order": {
+          			"_count": "desc"
+          		}
+          	}
         }
       }
     }
   }
-}';       
+}';
        return self::execQuery($queryStr);
    }
    public static function getAssetDetails($state, $type, $name){
@@ -145,7 +153,7 @@ class ElasticSearchQueries {
         "filter": [
     {"term": {"property.propertyState": "'.$state.'"}},
     {"term": {"property.propertyTypeCode": "'.$type.'"}},
-    {"term": {"property.propertyName": "'.$name.'"}}    
+    {"term": {"property.propertyName": "'.$name.'"}}
     ]
     }
   }
