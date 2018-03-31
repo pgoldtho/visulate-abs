@@ -21,7 +21,7 @@ class RestApis {
         return null;
     }
 
-    private static function getPropertyTypeSummary($typeArray){
+    private static function getPropertyTypeSummary($typeArray, $state){
         $usageType = array();
         foreach ($typeArray as $type){
             $usage = array();
@@ -33,15 +33,30 @@ class RestApis {
             $usage["average_secvalue"] = round($type["average_secvalue"]["value"]);
             $usage["sec_caprate"] =
                     self::getCapRate($type["average_secnoi"]["value"], $type["average_secvalue"]["value"]);
+            $usage["href"] = self::url('base'). "type/".$state."/".$type["key"];
             $usageType[] = $usage;
         }
         return $usageType;
     }
+    
+    public static function url($type) {
+        $server = filter_input_array(INPUT_SERVER);
+        if (isset($server['HTTPS'])) {
+            $protocol = ($server['HTTPS'] && $server['HTTPS'] != "off") ? "https" : "http";
+        } else {
+            $protocol = 'http';
+        }
+        if ($type == 'base') {
+            return $protocol . "://" . $server['HTTP_HOST']."/";
+        }
+        return $protocol . "://" . $server['HTTP_HOST'] . $server['REQUEST_URI'];
+    }
 
-        public static function getUsSummary(){
+    public static function getUsSummary(){
         $response =  ElasticSearchQueries::getUsSummary();
         $summary = array();
         $summary["total"] = $response["hits"]["total"];
+        $summary["self"] = self::url('full');
 
         foreach ($response["aggregations"]["group_by_state"]["buckets"] as $state) {
             $stateSummary = array();
@@ -60,10 +75,11 @@ class RestApis {
                     self::getCapRate($state["average_curnoi"]["value"], $state["average_curvalue"]["value"]);
 
             $stateSummary["usage"] =
-                    self::getPropertyTypeSummary($state["group_by_type"]["buckets"]);
+                    self::getPropertyTypeSummary($state["group_by_type"]["buckets"], $state["key"]);
 
             $summary["state"][] = $stateSummary;
         }
+        header("Content-Type:application/json");
         echo json_encode($summary);
     }
 
@@ -81,6 +97,7 @@ class RestApis {
         $summary['state_code'] = $state;
         $summary['type_code'] = $type;
 
+
         $response = ElasticSearchQueries::getTypeSummary($state, $type);
         foreach ($response["aggregations"]["property_name"]["buckets"] as $prop){
             $propSummary = array();
@@ -92,10 +109,14 @@ class RestApis {
             $propSummary["sec_caprate"] =
                     self::getCapRate($prop["average_secnoi"]["value"], $prop["average_secvalue"]["value"]);
             $propSummary["city_name"] = $prop["city"]["buckets"][0]["key"];
+            $propSummary["href"] = self::url('base').'asset/'.$state.'/'.$type.'/'. urlencode($prop["key"]);
 
             $summary["property"][] = $propSummary;
         }
-         echo json_encode($summary);
+        $summary['links']['self'] = self::url('full');
+        $summary['links']['parent'] = self::url('base');
+        header("Content-Type:application/json");
+        echo json_encode($summary);
     }
 
     public function getAssetDetails($vars) {
@@ -106,12 +127,13 @@ class RestApis {
         $assetDetails = array();
 
         $response = ElasticSearchQueries::getAssetDetails($state, $type, $name);
-       // print_r($response);
 
         foreach ($response["hits"]["hits"] as $asset) {
            $assetDetails[] = CmbsAssetDisplay::decodeAsset($asset["_source"]);
-           // $assetDetails[] = $asset["_source"];
         }
+        $assetDetails['links']['self'] = self::url('full');
+        $assetDetails['links']['parent'] = self::url('base').'type/'.$state.'/'.$type;
+        header("Content-Type:application/json");
         echo json_encode($assetDetails);
     }
 }
