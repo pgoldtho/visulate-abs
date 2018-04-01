@@ -90,6 +90,60 @@ class ElasticSearchQueries {
 }';
      return self::execQuery($queryStr);
    }
+   
+   
+   public static function  getIssuingEntities(){
+       $queryStr = '{
+  "size": 0,
+  "aggs": {
+    "depositor": {
+      "terms": {
+        "field": "depositor_name",
+        "size": 100,
+        "order": {"_key": "asc"}
+      },
+      "aggs": {
+        "depositor_cik" : {
+          "terms": {
+            "field": "depositor_cik"
+          }
+        },
+        "issuer": {
+          "terms": {
+            "field": "issuing_entity_name",
+            "size": 100,
+            "order": {"_key": "asc"}
+          },
+          "aggs": {
+            "issuer_cik" : {
+              "terms": {
+                "field": "issuing_entity_cik"
+              }
+            },
+            "property_count" : {
+              "cardinality" : {
+                "field" : "property.propertyName"
+              }
+            },
+            "average_secvalue": {
+              "avg": {
+                "field": "property.valuationSecuritizationAmount"
+              }
+            },
+            "average_secnoi": {
+              "avg": {
+                "field": "property.netOperatingIncomeSecuritizationAmount"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}';
+     return self::execQuery($queryStr);
+   }
+   
 
    public static function getTypeSummary($state, $type){
        $queryStr = '{
@@ -143,6 +197,76 @@ class ElasticSearchQueries {
 }';
        return self::execQuery($queryStr);
    }
+   
+   public static function getIssuer($cik){
+       $queryStr = '{
+  "query": {
+    "bool": {
+        "filter": {
+          "term": {"issuing_entity_cik": "'.$cik.'"}
+        }
+    }
+  }, 
+  "size": 0, 
+  "aggs": {
+    "property_name": {
+      "terms": {
+        "field": "property.propertyName", 
+        "size": 10000
+      },
+      "aggs": {
+        "average_secvalue": {
+          "avg": {
+            "field": "property.valuationSecuritizationAmount"
+          }
+        },
+        "average_secnoi": {
+          "avg": {
+            "field": "property.netOperatingIncomeSecuritizationAmount"
+          }
+        },
+        "average_secdate": {
+          "avg": {
+            "field": "property.valuationSecuritizationDate"       
+          }
+        },
+        "centroid" : {
+            "geo_centroid" : {
+                "field" : "property.location" 
+            }
+        },
+        "city": {
+          "terms": {
+            "field": "property.propertyCity",
+            "order": {
+              "_count": "desc"
+            },             
+            "size": 10
+          }
+        },
+        "type": {
+          "terms": {
+            "field": "property.propertyTypeCode",
+            "size": 15,
+            "order": {"_key": "desc"}
+          }
+        },
+        "state": {
+          "terms": {
+            "field": "property.propertyState",
+            "size": 15,
+            "order": {"_key": "desc"}
+          }
+        }        
+      }
+    }
+  }
+}';
+       return self::execQuery($queryStr);
+   }   
+   
+   
+   
    public static function getAssetDetails($state, $type, $name){
        $queryStr = '{
   "sort": [

@@ -82,6 +82,34 @@ class RestApis {
         header("Content-Type:application/json");
         echo json_encode($summary);
     }
+    
+    public static function getIssuingEntities(){
+        $esResponse = ElasticSearchQueries::getIssuingEntities();
+        $response = array();
+        foreach ($esResponse["aggregations"]["depositor"]["buckets"] as $depositor){
+            $depositorSummary = array();
+            $depositorSummary["name"] = $depositor["key"];
+            $depositorSummary["cik"] = $depositor["depositor_cik"]["buckets"][0]["key"];
+            foreach ($depositor["issuer"]["buckets"] as $issuer){
+                $issuerCik = $issuer["issuer_cik"]["buckets"][0]["key"];
+                $issuerSummary = array();
+                $issuerSummary["name"] = $issuer["key"];
+                $issuerSummary["cik"] = $issuerCik;
+                $issuerSummary["property_count"] = $issuer["property_count"]["value"];
+                $issuerSummary["average_secvalue"] = round($issuer["average_secvalue"]["value"]);
+                $issuerSummary["average_secnoi"] = round($issuer["average_secnoi"]["value"]);
+                $issuerSummary["sec_caprate"] =
+                    self::getCapRate($issuer["average_secnoi"]["value"], $issuer["average_secvalue"]["value"]);                
+                $issuerSummary["href"] = self::url('full').'/'.$issuerCik;                
+                $depositorSummary["issuer"][] = $issuerSummary;
+            }            
+            $response["depositor"][] = $depositorSummary;
+        }
+        
+        $response['links']['self'] = self::url('full');
+        header("Content-Type:application/json");
+        echo json_encode($response);
+    }
 
     public function getTypeSummary($vars) {
         $state = strtoupper($vars['state']);
@@ -96,7 +124,6 @@ class RestApis {
         }
         $summary['state_code'] = $state;
         $summary['type_code'] = $type;
-
 
         $response = ElasticSearchQueries::getTypeSummary($state, $type);
         foreach ($response["aggregations"]["property_name"]["buckets"] as $prop){
@@ -135,5 +162,42 @@ class RestApis {
         $assetDetails['links']['parent'] = self::url('base').'type/'.$state.'/'.$type;
         header("Content-Type:application/json");
         echo json_encode($assetDetails);
+    }
+    
+    private static function propertySummary($esResponse) {
+        $summary = array();
+        foreach ($esResponse["aggregations"]["property_name"]["buckets"] as $prop){
+            $state = $prop["state"]["buckets"][0]["key"];
+            $type = $prop["type"]["buckets"][0]["key"];
+            $propSummary = array();
+            $propSummary["name"] = $prop["key"];
+            $propSummary["location"] = $prop["centroid"]["location"];
+            $propSummary["average_secnoi"] = round($prop["average_secnoi"]["value"]);
+            $propSummary["average_secvalue"] = round($prop["average_secvalue"]["value"]);
+            $propSummary["average_secdate"] = $prop["average_secdate"]["value_as_string"];
+            $propSummary["sec_caprate"] =
+                    self::getCapRate($prop["average_secnoi"]["value"], $prop["average_secvalue"]["value"]);
+            $propSummary["city_name"] = $prop["city"]["buckets"][0]["key"];
+            $propSummary["state"] = CmbsAssetDisplay::decodeValue("US_STATE", $state);
+            $propSummary["type"] = CmbsAssetDisplay::decodeValue("PROPRTY_TYP_CODE_TYPE", $type);
+            $propSummary["state_code"] = $state;
+            $propSummary["type_code"] = $type;
+            $propSummary["links"]["property"] = self::url('base').'asset/'.$state.'/'.$type.'/'. urlencode($prop["key"]);
+            $propSummary["links"]["usage"] = self::url('base').'type/'.$state.'/'.$type;
+
+            $summary[] = $propSummary;
+        }
+        return $summary;
+    }
+
+
+    public static function getIssuer($cik) {
+        $esResponse =  ElasticSearchQueries::getIssuer($cik);
+        $response["property"] = self::propertySummary($esResponse);
+        $response["links"]["self"] = self::url('full');
+        $response["links"]["parent"] = self::url('base')."issuer";
+        
+        header("Content-Type:application/json");
+        echo json_encode($response);
     }
 }

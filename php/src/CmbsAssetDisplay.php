@@ -91,16 +91,21 @@ class CmbsAssetDisplay {
     
     public static function formatAsset($asset) {
         $formattedRecord = array(
-          "Accession Number" => $asset["accession_number"],
-          "Filer CIK" => $asset["filer_cik"],
-          "Depositor CIK" => $asset["depositor_cik"],
-          "Sponsor CIK" => $asset["sponsor_cik"],
-          "ABS Electronic Exhibits URL" => $asset["absEeUrl"],
-          "Filing URL" => $asset["filingUrl"],
-          "Sponsor File Number" => $asset["sponsor_file_no"],
-          "Filer File Number" => $asset["filer_file_no"]);
+            "Accession Number" => $asset["accession_number"],
+            "Depositor" => $asset["depositor_name"],
+            "Depositor CIK" => $asset["depositor_cik"],
+            "Issuing Entity" => $asset["issuing_entity_name"], 
+            "Issuing Entity CIK" => $asset["issuing_entity_cik"],  
+            "Filer CIK" => $asset["filer_cik"],
+            "Sponsor CIK" => $asset["sponsor_cik"],
+            "Sponsor File Number" => $asset["sponsor_file_no"],
+            "Filer File Number" => $asset["filer_file_no"]);
+        $links = array(
+            "issuing_entity" => RestApis::url('base')."issuer/".$asset["issuing_entity_cik"],
+            "sec_abs_ee" => $asset["absEeUrl"],
+            "sec_filing" => $asset["filingUrl"]); 
         
-       
+        $formattedRecord['links'] = $links;
         $formattedRecord['asset'] = self::displayFormat($asset['asset']);
         $formattedRecord['property'] = self::displayFormat($asset['property']);
         
