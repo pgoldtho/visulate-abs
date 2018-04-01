@@ -9,7 +9,9 @@ require __DIR__ . '/../vendor/autoload.php';
 
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
-    $r->addRoute('GET', '/', 'get_us_summary');   
+    $r->addRoute('GET', '/', 'get_us_summary');
+    $r->addRoute('GET', '/issuer', 'get_issuing_entities');
+    $r->addRoute('GET', '/issuer/{cik}', 'get_issuer');
     $r->addRoute('GET', '/type/{state}/{type}', 'get_type_summary');
     $r->addRoute('GET', '/asset/{state}/{type}/{name}', 'get_asset_details');
 });
@@ -47,12 +49,18 @@ function execRequest($handler, $vars) {
         case 'get_us_summary':
             RestApis::getUsSummary();
             break;
+        case 'get_issuing_entities':
+            RestApis::getIssuingEntities();
+            break;
         case 'get_type_summary':
             if (invalidTypeVars($vars)) { raiseError(405);}
             RestApis::getTypeSummary($vars);
             break;
         case 'get_asset_details':
             RestApis::getAssetDetails($vars);
+            break;
+        case 'get_issuer':
+            RestApis::getIssuer($vars["cik"]);
             break;
         default :
             raiseError(404);
