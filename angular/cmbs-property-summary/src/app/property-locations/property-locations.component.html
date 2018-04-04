@@ -8,7 +8,6 @@
   (markerClick)="showDetails(m)">
     <agm-info-window #infoWindow [isOpen]="name === m.name">
       <h3>{{m.name}}</h3>
-      <!-- <img class="streetview-image" src="{{imgUrl}}"/> -->
       <p>{{m.name}} had a net operating income of ${{m.average_secnoi|number}} on
          {{m.average_secdate}}.  It was valued at ${{m.average_secvalue|number}}
           with a cap rate of {{m.sec_caprate}}%
