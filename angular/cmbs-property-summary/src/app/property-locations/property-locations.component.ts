@@ -20,7 +20,6 @@ export class PropertyLocationsComponent implements OnInit {
   state: string;
   type: string;
   name: string;
-  imgUrl: string;
   properties: any[];
 
   map: any;
@@ -48,18 +47,61 @@ export class PropertyLocationsComponent implements OnInit {
       this.type = params['type_code'];
       this.zoom = null;
       this.center = null;
+      this.name = null;
       this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
         this.properties = stateSummary['property'].filter(i => i.location);
         if(this.map) {
           this.setMapBounds();
+          this.map.getStreetView().setVisible(false);
         }
       });
-      if(this.name) {
-        this.name = null;
-      }
     });
   }
 
+  showDetails(property) {
+    if(!this.name) {
+      this.zoom = this.map.getZoom();
+      this.center = this.map.getCenter();
+      this.map.setZoom(15);
+      google.maps.event.addListenerOnce(this.map, 'idle', () => {
+        this.map.setCenter({ lat: property.location.lat, lng: property.location.lon });
+      });
+    } else {
+      this.map.setCenter({ lat: property.location.lat, lng: property.location.lon });
+    }
+    this.name = property.name;
+    this.showStreetView(property);
+  }
+
+  showStreetView(property) {
+    let streetView = this.map.getStreetView();
+    let streetViewService = new google.maps.StreetViewService();
+    const INC_DISTANCE = 10;
+    const MAX_DISTANCE = 100;
+    let resolveStreetView = (propertyLocation, distanceRadius) => {
+      streetViewService.getPanoramaByLocation(propertyLocation, distanceRadius, (panoData, panoStatus) => {
+        if(panoStatus == google.maps.StreetViewStatus.OK) {
+          let streetViewTruckLocation = panoData.location.latLng;
+          let streetViewHeading = google.maps.geometry.spherical.computeHeading(streetViewTruckLocation, propertyLocation);
+          streetView.setPosition(streetViewTruckLocation);
+          streetView.setPov({ heading: streetViewHeading, pitch: 0});
+          streetView.setVisible(true);
+        } else if(distanceRadius < MAX_DISTANCE) {
+          resolveStreetView(propertyLocation, distanceRadius+INC_DISTANCE);
+        }
+      });
+    }
+    let location = new google.maps.LatLng(property.location.lat, property.location.lon);
+    resolveStreetView(location, INC_DISTANCE);
+  }
+
+  backToList() {
+    this.map.setZoom(this.zoom);
+    google.maps.event.addListenerOnce(this.map, 'idle', () => {
+      this.map.setCenter(this.center);
+    });
+    this.map.getStreetView().setVisible(false);
+  }
 
   mapReady(map) {
     this.map = map;
@@ -67,34 +109,20 @@ export class PropertyLocationsComponent implements OnInit {
   }
 
   setMapBounds() {
-    if(this.zoom && this.center) {
-      this.map.setZoom(this.zoom);
-      this.map.setCenter(this.center);
-    } else {
-      let bounds =  new google.maps.LatLngBounds();
-      for(let p of this.properties) {
-        bounds.extend({ lat: p.location.lat, lng: p.location.lon });
-      }
-      this.map.fitBounds(bounds);
-      google.maps.event.addListenerOnce(this.map, 'idle', () => {
-        if(this.map.getZoom() > 7) {
-          this.map.setZoom(7);
-        }
-      });
+    let bounds =  new google.maps.LatLngBounds();
+    for(let p of this.properties) {
+      bounds.extend({ lat: p.location.lat, lng: p.location.lon });
     }
+    this.map.fitBounds(bounds);
+    this.checkZoom();
   }
 
-  showDetails(state, type, marker) {
-    this.state = state;
-    this.type = type;
-    this.name = marker.name;
-
-    this.imgUrl = 'https://maps.googleapis.com/maps/api/streetview?size=200x150&location=' +
-    marker.location.lat + ',' + marker.location.lon + '&sensor=false&key=' + GOOGLE_MAPS_APIKEY;
-    this.zoom = this.map.getZoom();
-    this.center = this.map.getCenter();
-    this.map.setCenter({ lat: marker.location.lat, lng: marker.location.lon });
-    this.map.setZoom(15);
+  checkZoom() {
+    google.maps.event.addListenerOnce(this.map, 'idle', () => {
+      if(this.map.getZoom() > 7) {
+        this.map.setZoom(7);
+      }
+    });
   }
 
 }

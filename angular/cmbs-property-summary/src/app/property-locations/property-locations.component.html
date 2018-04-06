@@ -5,10 +5,9 @@
   <agm-marker
   [latitude]="convertStringToNumber(m.location.lat)"
   [longitude]="convertStringToNumber(m.location.lon)"
-  (markerClick)="showDetails(state, type, m)">
+  (markerClick)="showDetails(m)">
     <agm-info-window #infoWindow [isOpen]="name === m.name">
       <h3>{{m.name}}</h3>
-      <img class="streetview-image" src="{{imgUrl}}"/>
       <p>{{m.name}} had a net operating income of ${{m.average_secnoi|number}} on
          {{m.average_secdate}}.  It was valued at ${{m.average_secvalue|number}}
           with a cap rate of {{m.sec_caprate}}%
@@ -23,7 +22,7 @@
   <div class="list-container">
     <table class="table">
       <tbody>
-        <tr *ngFor="let p of properties" (click)="showDetails(state, type, p)">
+        <tr *ngFor="let p of properties" (click)="showDetails(p)">
           <th>{{p.name}}</th>
         </tr>
       </tbody>
@@ -32,6 +31,6 @@
 </div>
 
 <div *ngIf="name" class="details">
-  <i class="fa fa-arrow-left" aria-hidden="true" (click)="name = null; setMapBounds();"></i>
+  <i class="fa fa-arrow-left" aria-hidden="true" (click)="name = null; backToList();"></i>
   <app-asset-details [state]="state" [type]="type" [name]="name"></app-asset-details>
 </div>
