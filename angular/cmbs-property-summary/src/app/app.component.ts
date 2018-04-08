@@ -27,6 +27,8 @@ export class AppComponent implements OnInit {
   types: DropdownValue[];
   selectedType: DropdownValue;
 
+  activePage: string;
+
   constructor(
     private router: Router,
     private usIndexService: UsIndexService,
@@ -54,6 +56,13 @@ export class AppComponent implements OnInit {
     this.router.events.subscribe( event => {
       if(event instanceof RoutesRecognized) {
         let params = event.state.root.firstChild.params;
+
+        if(params.state) {
+          this.activePage = 'locations';
+        } else {
+          this.activePage = 'home';
+        }
+
         this.sharedService.statesObservable$.subscribe( data => {
           if(data) {
             this.usSummary = data[0];

@@ -3,7 +3,7 @@
     <img src="../assets/visulate-tiny.png" height="30" class="d-inline-block align-top" alt="">
     Visulate
   </a></logo>
-  <links [class.hidden]="!selectedType">
+  <links [class.hidden]="activePage === 'home'">
     <div class="btn-group" dropdown>
       <a dropdownToggle class="navdropbutton" mdbRippleRadius>
         {{selectedState ? selectedState.name : 'Select state'}}
@@ -22,7 +22,6 @@
         <a *ngFor="let type of types" class="dropdown-item" (click)="onNavChange(type, 'type')">{{type.name}}</a>
       </div>
     </div>
-
   </links>
 </mdb-navbar>
 <router-outlet></router-outlet>
