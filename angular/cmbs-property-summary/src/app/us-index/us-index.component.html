@@ -5,26 +5,30 @@
       submitted to the Securities and Exchange Commission.</p>
   </div>
 
-  <div class="homepage-form">
-    <div *ngIf="usSummary" class="btn-group" dropdown>
+  <div class="btn-group" data-toggle="buttons">
+    <button class="btn btn-primary" [class.active]="searchMode === 'location'" (click)="searchMode = 'location'">Property Location</button>
+    <button class="btn btn-primary" [class.active]="searchMode === 'issuer'" (click)="searchMode = 'issuer'">Issuing Entity</button>
+  </div>
+
+  <div class="homepage-form" *ngIf="searchMode === 'location'">
+    <div class="btn-group" dropdown>
       <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
         {{selectedState ? selectedState.name : 'Select state'}}
       </button>
       <div class="dropdown-menu dropdown-primary dropselect">
-        <a *ngFor="let state of states" class="dropdown-item" (click)="onChangeState(state)">{{state.name}}</a>
+        <a *ngFor="let state of states" class="dropdown-item" (click)="onSelectState(state)">{{state.name}}</a>
       </div>
     </div>
-    <div *ngIf="stateUsageSummary" class="btn-group" dropdown>
+    <div *ngIf="usage" class="btn-group" dropdown>
       <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
         Select usage
       </button>
       <div class="dropdown-menu dropdown-primary dropselect">
-        <a *ngFor="let useType of usage" class="dropdown-item" (click)="onRowSelect(useType.code)">{{useType.name}}</a>
+        <a *ngFor="let usageType of usage" class="dropdown-item" (click)="onSelectType(usageType.code)">{{usageType.name}}</a>
       </div>
     </div>
   </div>
-
-  <table *ngIf="stateUsageSummary" class="table homepage-summary">
+  <table *ngIf="stateUsageSummary && searchMode === 'location'" class="table homepage-summary">
     <thead>
       <tr>
         <th>Usage</th>
@@ -34,12 +38,31 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let useType of stateUsageSummary" (click)="onRowSelect(useType.type_code)">
-        <th scope="row">{{useType.usage_type}}</th>
-        <td>${{useType.average_secnoi|number}}</td>
-        <td>${{useType.average_secvalue|number}}</td>
-        <td>{{useType.sec_caprate}}
+      <tr *ngFor="let usageType of stateUsageSummary" (click)="onSelectType(usageType.type_code)">
+        <th scope="row">{{usageType.usage_type}}</th>
+        <td>${{usageType.average_secnoi|number}}</td>
+        <td>${{usageType.average_secvalue|number}}</td>
+        <td>{{usageType.sec_caprate}}
       </tr>
     </tbody>
   </table>
+
+  <div class="homepage-form" *ngIf="searchMode === 'issuer'">
+    <div class="btn-group" dropdown>
+      <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
+        {{selectedDepositor ? selectedDepositor.name : 'Select depositor'}}
+      </button>
+      <div class="dropdown-menu dropdown-primary dropselect">
+        <a *ngFor="let depositor of depositors" class="dropdown-item" (click)="onSelectDepositor(depositor)">{{depositor.name}}</a>
+      </div>
+    </div>
+    <div *ngIf="issuers" class="btn-group" dropdown>
+      <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
+        Select issuer
+      </button>
+      <div class="dropdown-menu dropdown-primary dropselect">
+        <a *ngFor="let issuer of issuers" class="dropdown-item" (click)="onSelectIssuer(issuer.code)">{{issuer.name}}</a>
+      </div>
+    </div>
+  </div>
 </div>

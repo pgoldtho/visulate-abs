@@ -14,4 +14,11 @@ export class SharedService {
     this.statesSubject.next(data);
   }
 
+  private depositorsSubject: Subject<any[]> = new BehaviorSubject<any[]>(null);
+  depositorsObservable$ = this.depositorsSubject.asObservable();
+
+  addDepositors(data: any[]) {
+    this.depositorsSubject.next(data);
+  }
+
 }

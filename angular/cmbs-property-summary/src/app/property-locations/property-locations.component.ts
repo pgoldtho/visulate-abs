@@ -22,6 +22,8 @@ export class PropertyLocationsComponent implements OnInit {
   name: string;
   properties: any[];
 
+  issuerMode: boolean;
+
   map: any;
   zoom: any;
   center: any;
@@ -43,18 +45,29 @@ export class PropertyLocationsComponent implements OnInit {
 
   addRouterSubscription(): void {
     this.route.params.subscribe( params => {
-      this.state = params['state'];
-      this.type = params['type_code'];
-      this.zoom = null;
-      this.center = null;
-      this.name = null;
-      this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
-        this.properties = stateSummary['property'].filter(i => i.location);
-        if(this.map) {
-          this.setMapBounds();
-          this.map.getStreetView().setVisible(false);
-        }
-      });
+      if(params['state']) {
+        this.issuerMode = false;
+        this.state = params['state'];
+        this.type = params['type_code'];
+        this.zoom = null;
+        this.center = null;
+        this.name = null;
+        this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
+          this.properties = stateSummary['property'].filter(i => i.location);
+          if(this.map) {
+            this.setMapBounds();
+            this.map.getStreetView().setVisible(false);
+          }
+        });
+      } else if(params['issuer_cik']) {
+        this.issuerMode = true;
+        this.indexService.getIssuersSummary(params['issuer_cik']).subscribe( issuerSummary => {
+          this.properties = issuerSummary['property'].filter(i => i.location);
+          if(this.map) {
+            this.setMapBounds();
+          }
+        });
+      }
     });
   }
 
@@ -68,6 +81,10 @@ export class PropertyLocationsComponent implements OnInit {
       });
     } else {
       this.map.setCenter({ lat: property.location.lat, lng: property.location.lon });
+    }
+    if(this.issuerMode) {
+      this.state = property.state_code;
+      this.type = property.type_code;
     }
     this.name = property.name;
     this.showStreetView(property);
@@ -101,6 +118,10 @@ export class PropertyLocationsComponent implements OnInit {
       this.map.setCenter(this.center);
     });
     this.map.getStreetView().setVisible(false);
+    if(this.issuerMode) {
+      this.state = null;
+      this.type = null;
+    }
   }
 
   mapReady(map) {
