@@ -38,7 +38,7 @@ export class UsIndexComponent implements OnInit {
   selectedDepositor: DropdownValue;
   issuers: DropdownValue[];
 
-  searchMode: string;
+  issuerMode: boolean;
 
   constructor(
     private usIndexService: UsIndexService,
@@ -52,7 +52,7 @@ export class UsIndexComponent implements OnInit {
       if(data) {
         this.usSummary = data[0];
         this.states = data[1];
-        this.searchMode = 'location';
+        this.issuerMode = false;
       }
     });
     this.sharedService.depositorsObservable$.subscribe( data => {
@@ -78,6 +78,10 @@ export class UsIndexComponent implements OnInit {
       }
     }
     return displaySummary;
+  }
+
+  changeMode() {
+    this.issuerMode = !this.issuerMode;
   }
 
   onSelectState(state) {

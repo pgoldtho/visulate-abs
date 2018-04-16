@@ -5,12 +5,16 @@
       submitted to the Securities and Exchange Commission.</p>
   </div>
 
-  <div class="btn-group" data-toggle="buttons">
-    <button class="btn btn-primary" [class.active]="searchMode === 'location'" (click)="searchMode = 'location'">Property Location</button>
-    <button class="btn btn-primary" [class.active]="searchMode === 'issuer'" (click)="searchMode = 'issuer'">Issuing Entity</button>
+  <div class="switch-container">
+    <span [class.active]="!issuerMode">Property Location</span>
+    <label class="switch">
+      <input type="checkbox" (click)="changeMode()">
+      <span class="slider round"></span>
+    </label>
+    <span [class.active]="issuerMode">Issuing Entity</span>
   </div>
 
-  <div class="homepage-form" *ngIf="searchMode === 'location'">
+  <div class="homepage-form" *ngIf="!issuerMode">
     <div class="btn-group" dropdown>
       <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
         {{selectedState ? selectedState.name : 'Select state'}}
@@ -28,7 +32,7 @@
       </div>
     </div>
   </div>
-  <table *ngIf="stateUsageSummary && searchMode === 'location'" class="table homepage-summary">
+  <table *ngIf="stateUsageSummary && !issuerMode" class="table homepage-summary">
     <thead>
       <tr>
         <th>Usage</th>
@@ -47,7 +51,7 @@
     </tbody>
   </table>
 
-  <div class="homepage-form" *ngIf="searchMode === 'issuer'">
+  <div class="homepage-form" *ngIf="issuerMode">
     <div class="btn-group" dropdown>
       <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
         {{selectedDepositor ? selectedDepositor.name : 'Select depositor'}}
@@ -58,7 +62,7 @@
     </div>
     <div *ngIf="issuers" class="btn-group" dropdown>
       <button dropdownToggle type="button" class="btn btn-primary dropdown-toggle waves-light" mdbRippleRadius>
-        Select issuer
+        Issuing entity
       </button>
       <div class="dropdown-menu dropdown-primary dropselect">
         <a *ngFor="let issuer of issuers" class="dropdown-item" (click)="onSelectIssuer(issuer.code)">{{issuer.name}}</a>
