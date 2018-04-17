@@ -26,6 +26,10 @@ const routes: Routes = [
   {
     path: 'asset/:state/:type_code/:name',
     component: AssetDetailsComponent
+  },
+  {
+    path: 'issuer/:issuer_cik',
+    component: PropertyLocationsComponent
   }
 ]
 

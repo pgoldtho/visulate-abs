@@ -5,6 +5,7 @@ import { UsIndexService } from '../us-index.service';
 import { UsSummary } from '../us-summary';
 import { SharedService } from "../shared.service";
 import { AppComponent } from "../app.component";
+import { DepositorsSummary } from "../depositors-summary";
 
 interface DropdownValue {
   name: string,
@@ -29,9 +30,15 @@ export class UsIndexComponent implements OnInit {
   usSummary: UsSummary[];
   states: DropdownValue[];
   selectedState: DropdownValue;
-
   usage: DropdownValue[];
   stateUsageSummary: UsageSummary[];
+
+  depositorsSummary: DepositorsSummary;
+  depositors: DropdownValue[];
+  selectedDepositor: DropdownValue;
+  issuers: DropdownValue[];
+
+  issuerMode: boolean;
 
   constructor(
     private usIndexService: UsIndexService,
@@ -45,6 +52,13 @@ export class UsIndexComponent implements OnInit {
       if(data) {
         this.usSummary = data[0];
         this.states = data[1];
+        this.issuerMode = false;
+      }
+    });
+    this.sharedService.depositorsObservable$.subscribe( data => {
+      if(data) {
+        this.depositorsSummary = data[0];
+        this.depositors = data[1];
       }
     });
   }
@@ -66,10 +80,14 @@ export class UsIndexComponent implements OnInit {
     return displaySummary;
   }
 
-  onChangeState(state){
+  changeMode() {
+    this.issuerMode = !this.issuerMode;
+  }
+
+  onSelectState(state) {
     this.selectedState = state;
-    for (let i in this.usSummary["state"]){
-      if (this.usSummary["state"][i]["state"] == state.code ) {
+    for(let i in this.usSummary["state"]) {
+      if(this.usSummary["state"][i]["state"] == state.code) {
         let usage = this.usSummary["state"][i]["usage"];
         this.stateUsageSummary = this.getDisplaySummary(usage);
         this.usage = this.getUsageValues(usage);
@@ -90,8 +108,32 @@ export class UsIndexComponent implements OnInit {
     return dropDownValues;
   }
 
-  onRowSelect(usageCode){
+  onSelectType(usageCode) {
     this.appComponent.navigate(this.selectedState.code, usageCode);
+  }
+
+  onSelectDepositor(depositor) {
+    this.selectedDepositor = depositor;
+    for(let i in this.depositorsSummary['depositor']) {
+      if(this.depositorsSummary['depositor'][i]['name'] == depositor.name) {
+        this.issuers = this.getIssuerValues(this.depositorsSummary['depositor'][i]['issuer']);
+      }
+    }
+  }
+
+  getIssuerValues(issuerArray): DropdownValue[] {
+    let dropDownValues = [];
+    for(let i in issuerArray) {
+      dropDownValues.push({
+        'name': issuerArray[i].name,
+        'code': issuerArray[i].cik
+      });
+    }
+    return dropDownValues;
+  }
+
+  onSelectIssuer(cik) {
+    this.appComponent.navigate(cik, null);
   }
 
 }

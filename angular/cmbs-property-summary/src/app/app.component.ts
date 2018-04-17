@@ -27,6 +27,8 @@ export class AppComponent implements OnInit {
   types: DropdownValue[];
   selectedType: DropdownValue;
 
+  activePage: string;
+
   constructor(
     private router: Router,
     private usIndexService: UsIndexService,
@@ -37,6 +39,7 @@ export class AppComponent implements OnInit {
 
   getIndex(): void {
     this.usIndexService.getUsSummary().subscribe(UsSummary => this.populateStateStructures(UsSummary));
+    this.usIndexService.getDepositorsSummary().subscribe(summary => this.populateDepositorStructure(summary));
   }
 
   populateStateStructures(usSummary: UsSummary[]): void {
@@ -50,10 +53,26 @@ export class AppComponent implements OnInit {
     this.sharedService.addStates([usSummary, states]);
   }
 
+  populateDepositorStructure(summary): void {
+    let depositors = [];
+    for(let i in summary['depositor']) {
+      depositors.push({'name': summary['depositor'][i]['name'],
+                      'code': summary['depositor'][i]['cik']});
+    }
+    this.sharedService.addDepositors([summary, depositors]);
+  }
+
   ngOnInit(): void {
     this.router.events.subscribe( event => {
       if(event instanceof RoutesRecognized) {
         let params = event.state.root.firstChild.params;
+
+        if(params.state) {
+          this.activePage = 'locations';
+        } else {
+          this.activePage = 'home';
+        }
+
         this.sharedService.statesObservable$.subscribe( data => {
           if(data) {
             this.usSummary = data[0];
@@ -99,8 +118,12 @@ export class AppComponent implements OnInit {
     this.navigate(this.selectedState.code, this.selectedType.code);
   }
 
-  navigate(stateCode, typeCode) {
-    this.router.navigateByUrl(`/locations/${stateCode}/${typeCode}`);
+  navigate(param1, param2) {
+    if(param2) {
+      this.router.navigateByUrl(`/locations/${param1}/${param2}`);
+    } else {
+      this.router.navigateByUrl(`/issuer/${param1}`);
+    }
   }
 
 
