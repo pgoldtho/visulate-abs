@@ -58,7 +58,7 @@ export class PropertyLocationsComponent implements OnInit {
             let x = a.city_name.toLowerCase();
             let y = b.city_name.toLowerCase();
             return x < y ? -1 : x > y ? 1 : 0;
-          })
+          });
           if(this.map) {
             this.setMapBounds();
             this.map.getStreetView().setVisible(false);
