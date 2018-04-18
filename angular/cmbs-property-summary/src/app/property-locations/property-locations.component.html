@@ -23,7 +23,7 @@
     <table class="table">
       <tbody>
         <tr *ngFor="let p of properties" (click)="showDetails(p)">
-          <th>{{p.name}}</th>
+          <th>{{p.name}}, {{p.city_name}}{{p.state_code ? ', '+p.state_code : ''}}</th>
         </tr>
       </tbody>
     </table>

@@ -54,6 +54,11 @@ export class PropertyLocationsComponent implements OnInit {
         this.name = null;
         this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
           this.properties = stateSummary['property'].filter(i => i.location);
+          this.properties.sort( (a, b) => {
+            let x = a.city_name.toLowerCase();
+            let y = b.city_name.toLowerCase();
+            return x < y ? -1 : x > y ? 1 : 0;
+          })
           if(this.map) {
             this.setMapBounds();
             this.map.getStreetView().setVisible(false);
@@ -63,6 +68,11 @@ export class PropertyLocationsComponent implements OnInit {
         this.issuerMode = true;
         this.indexService.getIssuersSummary(params['issuer_cik']).subscribe( issuerSummary => {
           this.properties = issuerSummary['property'].filter(i => i.location);
+          this.properties.sort( (a, b) => {
+            let x = a.state_code + a.city_name.toLowerCase();
+            let y = b.state_code + b.city_name.toLowerCase();
+            return x < y ? -1 : x > y ? 1 : 0;
+          });
           if(this.map) {
             this.setMapBounds();
           }
