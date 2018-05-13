@@ -18,13 +18,10 @@ class PropertyGeospatialTest extends TestCase{
     public function testTigerLineCoords() {
 
         $response = PropertyGeospatial::getTigerLineCoordinates("451 Seventh Avenue South", "Kirkland", "WA", "98033");
-        
-        $geo = json_decode($response, true);
+        print_r($response);
 
-        $this->assertEquals($geo["result"]["addressMatches"][0]["matchedAddress"],
-                 "451 7TH AVE S, KIRKLAND, WA, 98033");
-        $this->assertGreaterThan($geo["result"]["addressMatches"][0]["coordinates"]["x"], -122);
-        $this->assertGreaterThan($geo["result"]["addressMatches"][0]["coordinates"]["y"], 48);
+        $this->assertGreaterThan($response["lat"], 48);
+        $this->assertGreaterThan($response["lon"], 122);
     }
     
     public function testGeocodeProperty() {
@@ -78,13 +75,5 @@ class PropertyGeospatialTest extends TestCase{
     }
  
     
-    public function testGetExistingCoordinates() {
-        $geo = PropertyGeospatial::getExistingCoordinates("675 El Camino Real", "Palo Alto", "CA", "94301");
-        $this->assertGreaterThan($geo['lon'], -122);
-        $this->assertGreaterThan($geo['lat'], 38);
-       
-        $geo = PropertyGeospatial::getExistingCoordinates("El Camino Real", "Palo Alto", "CA", "94301");
-        $this->assertNull($geo2);
 
-    }
 }

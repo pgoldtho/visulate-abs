@@ -15,10 +15,9 @@ class CmbsAbsEE {
         if (is_null($result)) {
             $result = array();
         }
-        foreach ($haystack as $key => $value) {
-            // Check whether the key is the value we are looking for. If the value
-            // is not an array, add it to the result array.
-            if ($key === $needle && !is_array($value)) {
+        foreach ($haystack as $key => $value) { 
+            // Check whether the key is the value we are looking for. 
+            if ($key === $needle) {                
                 $result[] = $value;
             }
             if (is_array($value)) {
@@ -115,8 +114,19 @@ class CmbsAbsEE {
         }
         return count($absXmlElement);
     }
+    
+    public function extractCiks($data) {
+        $filingRecords = json_decode($data, true);
+        $companyData = self::find_all('COMPANY-DATA', $filingRecords);
+        foreach ($companyData as $entity) {
+            $companies[$entity['CIK']] = $entity['CONFORMED-NAME'];
+        }
+        return($companies);
+    }
+    
 
     public function seedFilings($data) {
+        $cikLookup = self::extractCiks($data);
         $filingRecords = json_decode($data, true);
         $totalCount = 0;
         foreach ($filingRecords["results"] as $results) {
@@ -127,29 +137,15 @@ class CmbsAbsEE {
             $depositor_cik = $results["filing"]["depositor_cik"];
             $sponsor_cik = $results["filing"]["sponsor_cik"];
             $issuing_entity_cik = $results["filing"]["issuing_entity_cik"];
-            
-            $companyCiks = self::find_all('CIK', $results);
-            $companyNames = self::find_all('CONFORMED-NAME', $results);
-            
-            for ($index = 0; $index < count($companyCiks); $index++) {
-                switch ($companyCiks[$index]) {
-                    case $depositor_cik: 
-                        $depositor_name = $companyNames[$index];
-                        break;
-                    case $issuing_entity_cik:
-                        $issuing_entity_name = $companyNames[$index];
-                        break;
-                }                
-            }
-            
+           
             $filing = array(
                 "accession_number" => $accession_number,
                 "filer_cik" => $filer_cik,
                 "depositor_cik" => $depositor_cik,
                 "sponsor_cik" => $sponsor_cik,
                 "issuing_entity_cik" => $issuing_entity_cik,
-                "depositor_name" => $depositor_name,
-                "issuing_entity_name" => $issuing_entity_name,
+                "depositor_name" => $cikLookup[$depositor_cik],
+                "issuing_entity_name" => $cikLookup[$issuing_entity_cik],
                 "absEeUrl" => $urls[0],
                 "filingUrl" => $urls[1],
                 "sponsor_file_no" => $file_numbers[0],
