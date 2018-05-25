@@ -98,8 +98,11 @@ class CmbsAssetPersistence {
         
         $client = $this->esClient->getClient();
         $response = $client->search($params);
-
-        return $response['hits']['hits'][0]['_source']['property']['location'];
+        
+        if (isset($response['hits']['hits'][0])) {
+          return $response['hits']['hits'][0]['_source']['property']['location'];
+        } // else
+        return null;
     }
 
     public function geocodeProperties() {

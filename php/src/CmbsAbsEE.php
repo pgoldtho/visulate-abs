@@ -49,15 +49,19 @@ class CmbsAbsEE {
     
     private static function getCoordinates($esClient, $property){
         // Check to see if an existing elasticSearch document has the coordinates
-        $existingCoords = $esClient->getExistingCoordinates
+        if (isset($property['propertyAddress']) && 
+                isset($property['propertyCity']) &&
+                isset($property['propertyState']) &&
+                isset($property['propertyZip'])) {
+            $existingCoords = $esClient->getExistingCoordinates
                    ($property['propertyAddress'], 
                     $property['propertyCity'], 
                     $property['propertyState'], 
                     $property['propertyZip']);
-        if ($existingCoords) {
-            print "Found existing coords for ".$property['propertyAddress']."\n";
-            return $existingCoords;}
-        
+            if ($existingCoords) {
+                print "Found existing coords for ".$property['propertyAddress']."\n";
+                return $existingCoords;}
+        }
         // Geocode the address
         $location = PropertyGeospatial::geocodeAssetProperty($property);
         return $location;        
@@ -86,8 +90,8 @@ class CmbsAbsEE {
             }
             $filing["asset"] = $parentAsset;
 
-            // Some assets have multiple properties
-            if (is_object($property[0])) {                
+            // Some assets have multiple properties            
+            if (isset($property[0])) {                
                 foreach ($property as $i => $prop) {
                     $propArray = (array) $prop;                     
                     $location = self::getCoordinates($esClient, $propArray);
