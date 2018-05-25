@@ -16,6 +16,7 @@ class PropertyGeospatialTest extends TestCase{
     
     
     public function testTigerLineCoords() {
+        print "\n Testing getTigerLineCoordinates()\n";
 
         $response = PropertyGeospatial::getTigerLineCoordinates("451 Seventh Avenue South", "Kirkland", "WA", "98033");
         print_r($response);
@@ -25,6 +26,7 @@ class PropertyGeospatialTest extends TestCase{
     }
     
     public function testGeocodeProperty() {
+         print "\n Testing geocodeProperty()\n";
         $geo = PropertyGeospatial::geocodeProperty("451 Seventh Avenue South", "Kirkland", "WA", "98033");
 
         $this->assertGreaterThan($geo['lon'], -122);
@@ -35,6 +37,7 @@ class PropertyGeospatialTest extends TestCase{
     }
     
     public function testGeocodeAssetProperty() {
+        print "\n Testing geocodeAssetProperty()\n";
         $property = [
             'propertyName' => 'Show Low Retail',
             'propertyAddress' => '5551 South White Mountain Road',

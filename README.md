@@ -7,7 +7,7 @@ Issuers submit data using an SEC Form ABS-EE ([example](https://www.sec.gov/Arch
 This project extracts data from EX-102 exhibits for Commercial Mortgage Backed Securities (CMBS) and stores it in an ElasticSearch index.  It creates one document for each property and geocodes its street address.
 
 Use the elasticSearchMapping.json file to create mappings for the index:
-`curl -X PUT http://localhost:9200/cmbs -d @elasticSearchMapping.json  -H 'Content-Type: application/json' `
+`curl -X PUT http://localhost:9200/cmbs -d @elasticSearch/elasticSearchMapping.json  -H 'Content-Type: application/json' `
 
 Edit php/src/PropertyGeospatial.php to add a [Google Geocoding API key](https://developers.google.com/maps/documentation/geocoding/get-api-key):
 
