@@ -32,10 +32,11 @@ class PropertyGeospatial {
         print_r($parameters."\n");
         
         $geo = json_decode($response, true);
-        $lat = $geo["result"]["addressMatches"][0]["coordinates"]["y"];
-        $lon = $geo["result"]["addressMatches"][0]["coordinates"]["x"];
-        
-        if ($lat && $lon) {
+        if (isset($geo["result"]["addressMatches"][0])){
+            $lat = $geo["result"]["addressMatches"][0]["coordinates"]["y"];
+            $lon = $geo["result"]["addressMatches"][0]["coordinates"]["x"];
+        }
+        if (isset($lat) && isset($lon)) {
            return ['lat' => $lat, 'lon' => $lon];
         } // else   
         return null;
@@ -56,10 +57,12 @@ class PropertyGeospatial {
         print_r($parameters."\n");
         
         $geo = json_decode($response, true);
-        $lat = $geo["results"][0]["geometry"]["location"]["lat"];
-        $lon = $geo["results"][0]["geometry"]["location"]["lng"];
+        if (isset($geo["results"][0])) {
+          $lat = $geo["results"][0]["geometry"]["location"]["lat"];
+          $lon = $geo["results"][0]["geometry"]["location"]["lng"];
+        }
         
-        if ($lat && $lon) {
+        if (isset($lat) && isset($lon)) {
            return ['lat' => $lat, 'lon' => $lon];
         } // else   
         return null;
@@ -74,8 +77,8 @@ class PropertyGeospatial {
             return;
         }
         // Call the (free) US Census geocoder
-        $tlCoords = self::getTigerLineCoordinates($street, $city, $state, $zipcode);
-        if ($tlCoords) {return $tlCoords;}
+        //$tlCoords = self::getTigerLineCoordinates($street, $city, $state, $zipcode);
+        //if ($tlCoords) {return $tlCoords;}
         
         // Call the Google Maps geocoder
         $gCoords = self::getGoogleMapsCoordinates($street, $city, $state, $zipcode);
@@ -86,10 +89,10 @@ class PropertyGeospatial {
     }
     
     public static function geocodeAssetProperty($property) {
-        if ($property['propertyAddress'] &&
-            $property['propertyCity'] &&
-            $property['propertyState'] &&
-            $property['propertyZip']) {
+        if (isset($property['propertyAddress']) &&
+            isset($property['propertyCity']) &&
+            isset($property['propertyState']) &&
+            isset($property['propertyZip'])) {
               return self::geocodeProperty(
                     $property['propertyAddress'], 
                     $property['propertyCity'], 
