@@ -15,7 +15,7 @@ use Elasticsearch\ClientBuilder;
 class ElasticSearchClient {
     private $_client;
     
-    const ES_INDEX = 'cmbs';
+    const ES_INDEX = 'cmbs2';
     const ES_TYPE = 'filing';
     const ES_HOSTS = ['localhost:9200'];
     

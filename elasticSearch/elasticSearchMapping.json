@@ -1,4 +1,15 @@
 {
+  "settings": {
+    "analysis": {
+      "normalizer": {
+        "uppercase_trim": {
+          "type": "custom",
+          "char_filter": [],
+          "filter": ["uppercase", "asciifolding", "trim"]
+        }
+      }
+    }
+  },  
   "mappings": {
     "filing": {
       "dynamic": "strict",
@@ -8,8 +19,8 @@
         "depositor_cik": {"type": "keyword"},
         "sponsor_cik": {"type": "keyword"},
         "issuing_entity_cik": {"type": "keyword"},
-        "depositor_name": {"type": "keyword"},
-        "issuing_entity_name": {"type": "keyword"},
+        "depositor_name": {"type": "keyword", "normalizer": "uppercase_trim"},
+        "issuing_entity_name": {"type": "keyword", "normalizer": "uppercase_trim"},
         "absEeUrl": {"type": "keyword"},
         "filingUrl": {"type": "keyword"},
         "sponsor_file_no": {"type": "keyword"},
@@ -120,13 +131,13 @@
         "property": {
           "dynamic": "strict",
           "properties": {
-            "propertyName": { "type": "keyword"},
+            "propertyName": { "type": "keyword", "normalizer": "uppercase_trim"},
             "propertyAddress": { "type": "text"},
             "propertyCity": { "type": "keyword"},
             "propertyState": { "type": "keyword"},
             "propertyZip": { "type": "keyword"},
             "propertyCounty": { "type": "keyword"},
-            "propertyTypeCode": { "type": "keyword"},
+            "propertyTypeCode": { "type": "keyword", "normalizer": "uppercase_trim"},
             "netRentableSquareFeetNumber": { "type": "integer"},
             "netRentableSquareFeetSecuritizationNumber": { "type": "integer"},
             "unitsBedsRoomsNumber": { "type": "integer"},
