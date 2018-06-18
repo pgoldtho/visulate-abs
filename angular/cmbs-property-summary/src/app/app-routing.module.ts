@@ -28,7 +28,7 @@ const routes: Routes = [
     component: AssetDetailsComponent
   },
   {
-    path: 'issuer/:issuer_cik',
+    path: 'issuing-entity/:issuer_cik',
     component: PropertyLocationsComponent
   }
 ]

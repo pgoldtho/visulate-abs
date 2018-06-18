@@ -280,6 +280,25 @@ class ElasticSearchQueries {
     {"term": {"property.propertyName": "'.$name.'"}}
     ]
     }
+  },
+  "aggs": {
+    "issuing_entity": {
+      "terms": {
+        "field": "issuing_entity_name",
+        "size": 10
+      },
+      "aggs": {
+        "hits": {
+          "top_hits": {
+            "sort": [
+               {"asset.reportingPeriodBeginningDate" : {"order": "desc"}}
+             ],
+            "size": 100
+          }
+        }
+        
+      }
+    }
   }
 }';
        return self::execQuery($queryStr);

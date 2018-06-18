@@ -122,7 +122,7 @@ export class AppComponent implements OnInit {
     if(param2) {
       this.router.navigateByUrl(`/locations/${param1}/${param2}`);
     } else {
-      this.router.navigateByUrl(`/issuer/${param1}`);
+      this.router.navigateByUrl(`/issuing-entity/${param1}`);
     }
   }
 
