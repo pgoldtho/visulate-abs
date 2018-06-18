@@ -65,5 +65,27 @@ class ElasticSearchQueriesTest extends TestCase {
         $this->assertEquals(0, $errorCount);
     }
     
+    public function testGetAssetDetails() {
+        print "\n Testing getAssetDetails()\n";
+        $response= self::$query->getAssetDetails('CA', 'RT', 'Lucky - Hayward');
+        //print_r($response["hits"]["hits"]["0"]["_source"]["property"]);
+        $this->assertEquals($response["hits"]["hits"]["0"]["_source"]["property"]["propertyAddress"],
+                "22555 MISSION BOULEVARD");
+        
+        foreach ($response["aggregations"]["issuing_entity"]["buckets"] as $issuingEntity) {
+             print $issuingEntity["key"] . "\n";
+             
+             print "https://www.sec.gov/cgi-bin/browse-edgar?CIK="; 
+             print $issuingEntity["hits"]["hits"]["hits"]["0"]["_source"]["issuing_entity_cik"];
+             print "&action=getcompany" . "\n";
+             
+             print $issuingEntity["hits"]["hits"]["hits"]["0"]["_source"]["depositor_name"] . "\n";
+             
+             
+             print_r($issuingEntity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]);
+        }
+        
+       
+    }
     
 }

@@ -154,10 +154,15 @@ class RestApis {
         $assetDetails = array();
 
         $response = ElasticSearchQueries::getAssetDetails($state, $type, $name);
-
+        
         foreach ($response["hits"]["hits"] as $asset) {
            $assetDetails[] = CmbsAssetDisplay::decodeAsset($asset["_source"]);
         }
+        $assetDetails['summary'] = CmbsAssetDisplay::assetSummary($assetDetails);      
+        $assetDetails['issuingEntity'] = 
+                CmbsAssetDisplay::assetEntitySummary($response["aggregations"]["issuing_entity"]["buckets"]);
+        
+       
         $assetDetails['links']['self'] = self::url('full');
         $assetDetails['links']['parent'] = self::url('base').'type/'.$state.'/'.$type;
         header("Content-Type:application/json");

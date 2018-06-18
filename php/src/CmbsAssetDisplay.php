@@ -58,7 +58,7 @@ class CmbsAssetDisplay {
                     $newKey = substr($newKey, 0, $lastKeyWordStart);
                     break;
                 case ' Percentage':
-                    if ($value < 1) {
+                    if (($value < 1) or ($value == 1)) {
                         $value *= 100;
                     }
                     $newValue = $value."%";
@@ -67,8 +67,8 @@ class CmbsAssetDisplay {
                 case ' Date':             
                     if ($newKey != 'Valuation Securitization Date') {
                         $newKey = substr($newKey, 0, $lastKeyWordStart);
-                    } 
-                    $newValue = date_format(date_create_from_format('m-d-Y', $value), 'F d, Y');                    
+                    }                
+                    $newValue = date_format(date_create_from_format('m-d-Y', $value), 'F d, Y');      
                     break;
                 case ' Indicator':
                     if ($value == 'true') {
@@ -102,6 +102,7 @@ class CmbsAssetDisplay {
             "Filer File Number" => $asset["filer_file_no"]);
         $links = array(
             "issuing_entity" => RestApis::url('base')."issuer/".$asset["issuing_entity_cik"],
+            "sec_entity_filings" => "https://www.sec.gov/cgi-bin/browse-edgar?CIK=".$asset["issuing_entity_cik"]."&action=getcompany",
             "sec_abs_ee" => $asset["absEeUrl"],
             "sec_filing" => $asset["filingUrl"]); 
         
@@ -112,7 +113,48 @@ class CmbsAssetDisplay {
         return $formattedRecord;
    
     }
-  
+    
+    public static function assetSummary($asset) {
+        $prop = $asset[0]["property"];
+        $propSummary = "{$prop['Property']} is a ";
+        if (isset($prop['Net Rentable Square Feet'])) {
+            $propSummary .= "{$prop['Net Rentable Square Feet']} sq ft ";
+        } elseif (isset($prop['Units Beds Rooms'])) {
+            $propSummary .= "{$prop['Units Beds Rooms']} unit/bed/room ";
+        }
+        $propSummary .= "{$prop['Property Type']} building in {$prop['Property City']}, {$prop['Property State']}. ";
+        
+        if (isset($prop['Year Built'])) {
+            $propSummary .= "It was built in {$prop['Year Built']}";
+            if (isset($prop['Year Last Renovated'])) {
+                $propSummary .= " and last renovated in {$prop['Year Last Renovated']}";
+            }
+            $propSummary .= ". ";
+        }
+
+        if (isset($prop['Valuation Securitization'])) {
+            $propSummary .= "It was valued on {$prop['Valuation Securitization Date']} at {$prop['Valuation Securitization']}. ";
+            if (isset($prop['Physical Occupancy Securitization'])) {
+            $propSummary .= "It had a physical occupancy of {$prop['Physical Occupancy Securitization']} on that date. ";
+        }
+           
+        }
+
+        if (isset($prop['Largest Tenant'])) {
+            $propSummary .= "The largest tenant was {$prop['Largest Tenant']} with {$prop['Square Feet Largest Tenant']} sq ft.  ";
+            if (isset($prop['Lease Expiration Largest Tenant'])) {
+               $propSummary .= "Their lease expires on {$prop['Lease Expiration Largest Tenant']}.  ";
+            } 
+        }
+ 
+        if (isset($prop['Net Operating Income Securitization'])) {
+            $propSummary .= "The net operating income on {$prop['Valuation Securitization Date']} was {$prop['Net Operating Income Securitization']}.  ";
+        }
+
+        
+        return $propSummary;
+    }
+
     public static function decodeValue($codeType, $codeValue) {
         $codeIndex = ["ARM_INDX_CODE_TYPE" => [
                 "A" => "11 FHLB COFI  (1 Month)",
@@ -407,5 +449,88 @@ class CmbsAssetDisplay {
         self::decodeAssetValues($asset, "property", "mostRecentDebtServiceCoverageCode", "MST_RCNT_DEBT_SRVC_AMNT_CODE_TYPE");
         
         return self::formatAsset($asset);
+    }
+    
+    
+    public function assetEntitySummary($issuingEntities) {
+        $result = array();
+        $entityList = array();
+        $loan = ["min"=>0, "max"=>0];
+        $propCount = ["min"=>0, "max"=>0];
+        foreach ($issuingEntities as $entity) {
+            
+            if (isset($entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"])) {                
+                
+                if ($loan["min"] == 0) {
+                  $loan["min"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"];
+                  $loan["max"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"];
+                }
+                if ($loan["min"] > $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"]) {
+                  $loan["min"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"];
+                }
+                if ($loan["max"] < $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"]) {
+                  $loan["max"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"];
+                }
+                
+            }
+            if (isset($entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"])) {
+                
+                if ($propCount["min"] == 0) {
+                  $propCount["min"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"];
+                  $propCount["max"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"];
+                }
+                if ($propCount["min"] > $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"]) {
+                    $propCount["min"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"];
+                }
+                
+                if ($propCount["max"] < $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"]) {
+                    $propCount["max"] = $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"];
+                }
+            }
+            
+            
+            $entityList[] = self::displayFormat(array(
+               "issuingEntity"           => $entity["key"],
+               "CIK"            => $entity["hits"]["hits"]["hits"]["0"]["_source"]["issuing_entity_cik"],
+               "depositorName" => $entity["hits"]["hits"]["hits"]["0"]["_source"]["depositor_name"],
+               "depositorCIK"  => $entity["hits"]["hits"]["hits"]["0"]["_source"]["depositor_cik"],
+               "issuingEntityFilings"    =>  "https://www.sec.gov/cgi-bin/browse-edgar?CIK=" .  
+                                    $entity["hits"]["hits"]["hits"]["0"]["_source"]["issuing_entity_cik"] . 
+                                    "&action=getcompany",
+               "originator"     => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originatorName"],
+               "originationDate"=> $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originationDate"],
+               "loanAmount"     => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"],
+               "InterestRatePercentage"  => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalInterestRatePercentage"],
+               "NumberProperties" => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"]
+        ));        
+        }
+        $result["entity_list"] = $entityList;
+        
+        $prop = $issuingEntities[0]["hits"]["hits"]["hits"]["0"]["_source"]["property"];
+        $propSummary = "{$prop['propertyName']} is referenced as the collateral for a loan in ";
+        if (count($entityList) ==1 ) {
+            $propSummary .= "a single security.  ";
+        } else {
+            $propSummary .= count($entityList) . " securities.  ";
+        }
+               
+        if ($propCount["min"] == $propCount["max"]) {
+            if ($propCount["min"] == 1) {
+                $propSummary .= "It is the only collateral for this loan.  ";
+            } else {
+                $propSummary .= "It is one of {$propCount["min"]} properties collateralizing this loan.  ";
+            }            
+        } else {
+            $propSummary .= "The property count for this loan's collateral in the different CMBS varies between {$propCount["min"]} and {$propCount["max"]}.  ";
+        }
+        
+        if ($loan["min"] == $loan["max"]) {
+            $propSummary .= "The loan amount was $".number_format($loan["min"]);
+        } else {
+            $propSummary .= "The loan amount in these CMBS varies between $".number_format($loan["min"]). " and ".number_format($loan["max"]);
+        }
+        
+        $result["summary"] = $propSummary;
+        return $result;
     }
 }

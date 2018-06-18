@@ -1,5 +1,10 @@
 <div  *ngIf="!propDataSource" class="loader">Loading...</div>
 <div *ngIf="propDataSource" class="asset-details-container">
+  <p>{{assetDetail.summary}}</p>
+  <p>{{assetDetail.issuingEntity.summary}}</p>
+  <ul *ngFor="let entity of assetDetail.issuingEntity.entity_list">
+    <li><a [attr.href]="'/issuing-entity/'+entity.CIK">{{entity.Depositor}} - {{entity['Issuing Entity']}} ({{entity.Loan}})</a></li>
+  </ul>
   <div class="example-container mat-elevation-z8">
     <mat-table #table [dataSource]="propDataSource">
 
@@ -35,4 +40,7 @@
       <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!assetShowing"></mat-row>
     </mat-table>
   </div>
+
+
+
 </div>

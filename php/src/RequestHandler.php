@@ -6,6 +6,7 @@ namespace CMBS;
 use FastRoute;
 
 require __DIR__ . '/../vendor/autoload.php';
+error_reporting(0);
 
 
 $dispatcher = FastRoute\simpleDispatcher(function(FastRoute\RouteCollector $r) {
