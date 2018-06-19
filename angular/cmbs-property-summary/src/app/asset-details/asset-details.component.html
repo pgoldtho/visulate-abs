@@ -3,7 +3,7 @@
   <p>{{assetDetail.summary}}</p>
   <p>{{assetDetail.issuingEntity.summary}}</p>
   <ul *ngFor="let entity of assetDetail.issuingEntity.entity_list">
-    <li><a [attr.href]="'/issuing-entity/'+entity.CIK">{{entity.Depositor}} - {{entity['Issuing Entity']}} ({{entity.Loan}})</a></li>
+    <li><a [attr.href]="'issuing-entity/'+entity.CIK">{{entity.Depositor}} - {{entity['Issuing Entity']}} ({{entity.Loan}})</a></li>
   </ul>
   <div class="example-container mat-elevation-z8">
     <mat-table #table [dataSource]="propDataSource">
