@@ -15,14 +15,14 @@ declare let google: any;
   templateUrl: './property-locations.component.html',
   styleUrls: ['./property-locations.component.css']
 })
-export class PropertyLocationsComponent implements OnInit {
+export class PropertyLocationsComponent {
 
   state: string;
   type: string;
   name: string;
   properties: any[];
 
-  issuerMode: boolean;
+  issuerCik: string;
 
   map: any;
   zoom: any;
@@ -39,14 +39,14 @@ export class PropertyLocationsComponent implements OnInit {
     private router: Router
   ) { }
 
-  ngOnInit(): void {
+  mapReady(map) {
+    this.map = map;
     this.addRouterSubscription();
   }
 
   addRouterSubscription(): void {
     this.route.params.subscribe( params => {
       if(params['state']) {
-        this.issuerMode = false;
         this.state = params['state'];
         this.type = params['type_code'];
         this.zoom = null;
@@ -59,13 +59,14 @@ export class PropertyLocationsComponent implements OnInit {
             let y = b.city_name.toLowerCase();
             return x < y ? -1 : x > y ? 1 : 0;
           });
-          if(this.map) {
-            this.setMapBounds();
-            this.map.getStreetView().setVisible(false);
+          this.setMapBounds();
+          this.map.getStreetView().setVisible(false);
+          if(params['property_name']) {
+            this.goToPropertyByName(params['property_name']);
           }
         });
       } else if(params['issuer_cik']) {
-        this.issuerMode = true;
+        this.issuerCik = params['issuer_cik'];
         this.indexService.getIssuersSummary(params['issuer_cik']).subscribe( issuerSummary => {
           this.properties = issuerSummary['property'].filter(i => i.location);
           this.properties.sort( (a, b) => {
@@ -73,15 +74,31 @@ export class PropertyLocationsComponent implements OnInit {
             let y = b.state_code + b.city_name.toLowerCase();
             return x < y ? -1 : x > y ? 1 : 0;
           });
-          if(this.map) {
-            this.setMapBounds();
+          this.setMapBounds();
+          if(params['property_name']) {
+            this.goToPropertyByName(params['property_name']);
           }
         });
       }
     });
   }
 
+  goToPropertyByName(propertyName) {
+    this.properties.forEach( prop => {
+      if(prop.name == propertyName) {
+        this.showDetails(prop);
+      }
+    });
+  }
+
   showDetails(property) {
+    if(this.issuerCik) {
+      this.state = property.state_code;
+      this.type = property.type_code;
+      this.location.go(`issuing-entity/${this.issuerCik}/${encodeURIComponent(property.name)}`);
+    } else {
+      this.location.go(`locations/${this.state}/${this.type}/${encodeURIComponent(property.name)}`);
+    }
     if(!this.name) {
       this.zoom = this.map.getZoom();
       this.center = this.map.getCenter();
@@ -91,10 +108,6 @@ export class PropertyLocationsComponent implements OnInit {
       });
     } else {
       this.map.setCenter({ lat: property.location.lat, lng: property.location.lon });
-    }
-    if(this.issuerMode) {
-      this.state = property.state_code;
-      this.type = property.type_code;
     }
     this.name = property.name;
     this.showStreetView(property);
@@ -128,15 +141,13 @@ export class PropertyLocationsComponent implements OnInit {
       this.map.setCenter(this.center);
     });
     this.map.getStreetView().setVisible(false);
-    if(this.issuerMode) {
+    if(this.issuerCik) {
       this.state = null;
       this.type = null;
+      this.location.go(`issuing-entity/${this.issuerCik}`);
+    } else {
+      this.location.go(`locations/${this.state}/${this.type}`);
     }
-  }
-
-  mapReady(map) {
-    this.map = map;
-    this.setMapBounds();
   }
 
   setMapBounds() {

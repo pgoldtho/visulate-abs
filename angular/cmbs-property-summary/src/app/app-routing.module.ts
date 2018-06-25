@@ -30,6 +30,14 @@ const routes: Routes = [
   {
     path: 'issuing-entity/:issuer_cik',
     component: PropertyLocationsComponent
+  },
+  {
+    path: 'locations/:state/:type_code/:property_name',
+    component: PropertyLocationsComponent
+  },
+  {
+    path: 'issuing-entity/:issuer_cik/:property_name',
+    component: PropertyLocationsComponent
   }
 ]
 
