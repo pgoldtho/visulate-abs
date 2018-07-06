@@ -15,7 +15,7 @@
   }
   .homepage-form {
     padding-left: 0;
-    text-align: center;
+    padding-top: 0;
   }
 }
 
@@ -25,11 +25,16 @@
 
 .text-cont {
   position: fixed;
-  bottom: 20px;
+  bottom: 0;
   width: 100%;
   color: #fff;
   background-color: rgba(33,33,33,.3);
   padding: 10px;
+}
+
+.dropdown-item {
+  white-space: normal;
+  border-bottom: solid 1px #eceff1;
 }
 
 .switch-container {
