@@ -8,7 +8,7 @@ import { UsSummary } from '../us-summary';
 import { MatTableDataSource } from '@angular/material';
 import { DataSource } from "@angular/cdk/table";
 import 'rxjs/add/observable/of';
-import { Observable } from "rxjs/Observable";
+import { Observable, of } from "rxjs";
 import { CollectionViewer } from "@angular/cdk/collections";
 
 @Component({
@@ -78,7 +78,7 @@ export class MyDataSource extends DataSource<Element> {
   }
 
   connect(): Observable<Element[]> {
-    return Observable.of(this.element);
+    return of(this.element);
   }
 
   disconnect(collectionViewer: CollectionViewer): void { }
