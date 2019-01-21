@@ -13,10 +13,6 @@ h5 {
   border-bottom: 1px solid #dee2e6;
 }
 
-.properties-container {
-  height: calc(50% - 28px);
-}
-
 .list-container {
   height: calc(100% - 61px);
   overflow: scroll;

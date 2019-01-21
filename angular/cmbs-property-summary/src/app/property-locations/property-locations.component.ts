@@ -21,9 +21,12 @@ export class PropertyLocationsComponent {
   type: string;
   name: string;
   properties: any[];
-
+  displayedColumns = ['name', 'value'];
   issuerCik: string;
+  collapseAsset = [];
 
+  title: string;
+  summary: html;
   map: any;
   zoom: any;
   center: any;
@@ -52,7 +55,10 @@ export class PropertyLocationsComponent {
         this.zoom = null;
         this.center = null;
         this.name = null;
+
         this.indexService.getStateSummary(this.state, this.type).subscribe( stateSummary => {
+          this.title = stateSummary['state'] + ' ' + stateSummary['type'];
+          this.summary = stateSummary['text_description'];
           this.properties = stateSummary['property'].filter(i => i.location);
           this.properties.sort( (a, b) => {
             let x = a.city_name.toLowerCase();
@@ -68,6 +74,8 @@ export class PropertyLocationsComponent {
       } else if(params['issuer_cik']) {
         this.issuerCik = params['issuer_cik'];
         this.indexService.getIssuersSummary(params['issuer_cik']).subscribe( issuerSummary => {
+          this.title = issuerSummary['issuing_entity'];
+          this.summary = issuerSummary['text_description'];
           this.properties = issuerSummary['property'].filter(i => i.location);
           this.properties.sort( (a, b) => {
             let x = a.state_code + a.city_name.toLowerCase();
@@ -75,6 +83,37 @@ export class PropertyLocationsComponent {
             return x < y ? -1 : x > y ? 1 : 0;
           });
           this.setMapBounds();
+
+          this.assetList = Object.values(issuerSummary['asset_summary']['asset']);
+          this.assetDisplayList = [];
+          var self = this;
+          this.assetList.forEach(function (assetInstance) {
+            var assetObj = new Object();
+
+            assetObj.header = assetInstance['Original Loan']
+
+            assetObj.id = assetInstance['Asset'];
+            if (assetInstance['Loan Structure'] === 'WL') {
+              assetObj.header += ' whole loan ';
+            } else if (assetInstance['Loan Structure'] === 'PP') {
+              assetObj.header += ' pari-passu loan ';
+            } else {
+              assetObj.header += ' loan ';
+            }
+
+            assetObj.header += ' at '+assetInstance['Interest Rate Securitization']
+                            + ' originated by ' + assetInstance['Originator']+ ' on '+ assetInstance['Origination'];
+
+            if (assetInstance['Report Period End Scheduled Loan Balance'] !== assetInstance['Report Period End Actual Balance']){
+              assetObj.header += '. Scheduled balance on was' + assetInstance['Reporting Period End'] + ': '
+                               + assetInstance['Report Period End Scheduled Loan Balance']
+                               + ' actual balance was ' + assetInstance['Report Period End Actual Balance'];
+            }
+            assetObj.content =   Object.keys(assetInstance).map(k => ({ name: k, value: assetInstance[k]}));
+            self.assetDisplayList.push(assetObj);
+            self.collapseAsset[assetObj.id] = true;
+          });
+
           if(params['property_name']) {
             this.goToPropertyByName(params['property_name']);
           }
@@ -111,6 +150,10 @@ export class PropertyLocationsComponent {
     }
     this.name = property.name;
     this.showStreetView(property);
+  }
+
+  toggleDisplay(id: string) {
+    this.collapseAsset[id] = !this.collapseAsset[id];
   }
 
   showStreetView(property) {

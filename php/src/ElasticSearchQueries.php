@@ -199,7 +199,7 @@ class ElasticSearchQueries {
    }
    
    public static function getIssuer($cik){
-       $queryStr = '{
+      $queryStr = '{
   "query": {
     "bool": {
         "filter": {
@@ -209,6 +209,33 @@ class ElasticSearchQueries {
   }, 
   "size": 0, 
   "aggs": {
+    "issuing_entity": {
+      "terms": {
+        "field": "issuing_entity_name",
+        "size": 10
+      }
+    },
+    
+    "assets": {
+      "terms": {
+        "field": "asset.assetNumber",
+        "size": 1000
+      },
+      "aggs": {
+       "latest": {
+                    "top_hits": {
+                        "size": 1,
+                        "sort": [
+                            {
+                                "asset.reportingPeriodEndDate": {
+                                "order": "desc"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
     "property_name": {
       "terms": {
         "field": "property.propertyName", 
@@ -262,6 +289,7 @@ class ElasticSearchQueries {
     }
   }
 }';
+   //   error_log($queryStr."\n", 3, '/var/log/php.log');
        return self::execQuery($queryStr);
    }   
    

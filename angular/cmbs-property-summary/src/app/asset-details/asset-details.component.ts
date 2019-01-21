@@ -22,6 +22,7 @@ export class AssetDetailsComponent {
 
   property = [];
   asset = [];
+  assetDisplayList = [];
 
   displayedColumns = ['name', 'value'];
   propDataSource: MyDataSource;
@@ -30,8 +31,8 @@ export class AssetDetailsComponent {
   header: string;
   assetHeader: string;
 
-  propShowing = false;
-  assetShowing = false;
+  propShowing = true;
+  collapseAsset = [];
 
   @Input() state: string;
   @Input() type: string;
@@ -45,6 +46,7 @@ export class AssetDetailsComponent {
 
 
   ngOnChanges() {
+    var self = this;
     if(this.name) {
       var state = this.state;
       var useCode = this.type;
@@ -56,12 +58,24 @@ export class AssetDetailsComponent {
         this.property = Object.keys(property).map(k => ({ name: k, value: property[k] }));
         this.property = this.property.filter(i => i.name !== 'location');
         this.propDataSource = new MyDataSource(this.property);
-        let asset = this.assetDetail[0]['asset'];
-        this.assetHeader = asset['Original Loan'];
-        this.asset = Object.keys(asset).map(k => ({ name: k, value: asset[k]}));
-        this.assetDataSource = new MyDataSource(this.asset);
+
+        let assetList = this.assetDetail.issuingEntity.entity_list;
+        assetList.forEach(function (assetInstance) {
+          var assetObj = new Object();
+          assetObj.cik = assetInstance['CIK'];
+          assetObj.header = assetInstance['Loan'] + ' ' +  assetInstance['Raw']['asset']['Loan Structure']
+                           + ' originated by ' + assetInstance['Raw']['asset']['Originator'] ;
+          assetObj.content =   Object.keys(assetInstance['Raw']['asset']).map(k => ({ name: k, value: assetInstance['Raw']['asset'][k]}));
+          self.assetDisplayList.push(assetObj);
+          self.collapseAsset[assetObj.cik] = true;
+        })
       });
+
     }
+  }
+
+  toggleDisplay(cik: string) {
+    this.collapseAsset[cik] = !this.collapseAsset[cik];
   }
 
   spaceAndCap(name: string) {

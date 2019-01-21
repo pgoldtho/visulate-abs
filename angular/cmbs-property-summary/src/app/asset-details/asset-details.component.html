@@ -3,7 +3,7 @@
   <p>{{assetDetail.summary}}</p>
   <p>{{assetDetail.issuingEntity.summary}}</p>
   <ul *ngFor="let entity of assetDetail.issuingEntity.entity_list">
-    <li><a [attr.href]="'issuing-entity/'+entity.CIK">{{entity.Depositor}} - {{entity['Issuing Entity']}} ({{entity.Loan}})</a></li>
+    <li><a [attr.href]="'issuing-entity/'+entity.CIK">{{entity['Issuing Entity']}} ({{entity.Loan}})</a></li>
   </ul>
   <div class="example-container mat-elevation-z8">
     <mat-table #table [dataSource]="propDataSource">
@@ -23,11 +23,12 @@
     </mat-table>
   </div>
 
+<div *ngFor="let asset of assetDisplayList">
   <div class="example-container mat-elevation-z8">
-    <mat-table #table [dataSource]="assetDataSource">
+    <mat-table #table [dataSource]="asset.content">
 
       <ng-container matColumnDef="name">
-        <mat-header-cell *matHeaderCellDef class="header">Loan: {{assetHeader}}</mat-header-cell>
+        <mat-header-cell *matHeaderCellDef class="header">{{asset.header}}</mat-header-cell>
         <mat-cell *matCellDef="let element"  class="name"> {{spaceAndCap(element.name)}}: </mat-cell>
       </ng-container>
 
@@ -36,11 +37,9 @@
           <mat-cell *matCellDef="let element" class=""> {{element.value}} </mat-cell>
       </ng-container>
 
-      <mat-header-row *matHeaderRowDef="displayedColumns" (click)="assetShowing = !assetShowing"></mat-header-row>
-      <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="!assetShowing"></mat-row>
+      <mat-header-row *matHeaderRowDef="displayedColumns" (click)="toggleDisplay(asset.cik)"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="collapseAsset[asset.cik]"></mat-row>
     </mat-table>
   </div>
-
-
-
+</div>
 </div>

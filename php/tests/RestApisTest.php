@@ -4,7 +4,6 @@
  * Copyright (c) Visulate LLC 2018 All rights reserved
  */
 
-use PHPUnit\Framework\TestCase;
 use CMBS\RestApis;
 
 class RestApisTest extends PHPUnit\Framework\TestCase {
@@ -41,17 +40,22 @@ class RestApisTest extends PHPUnit\Framework\TestCase {
         $response = self::$httpClient->request('GET', 'asset/FL/IN/1800+UNIVERSITY+PARKWAY');
 
         $this->assertEquals(200, $response->getStatusCode());
-        
-        $data = json_decode($response->getBody(), true);
-        
-        print_r($data);
-/*
+//        $data = json_decode($response->getBody(), true);
+//        print_r($data);
+
         $contentType = $response->getHeaders()["Content-Type"][0];
         $this->assertEquals("application/json", $contentType);
 
-        $userAgent = json_decode($response->getBody())->{"user-agent"};
-        $this->assertRegexp('/Guzzle/', $userAgent);
-    */
+    }
+    
+    public function testGetIssuer(){
+        print "\n Testing getIssuer()\n";
+        $response = self::$httpClient->request('GET', 'issuer/0001689111');
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $data = json_decode($response->getBody(), true);
+        print_r($data["issuing_entity"]);
+        print_r($data["asset_summary"]);
     }
     
     
