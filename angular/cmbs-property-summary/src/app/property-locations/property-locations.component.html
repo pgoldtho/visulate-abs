@@ -17,18 +17,47 @@
 </ng-container>
 </agm-map>
 
+
+
+
 <div *ngIf="properties && !name" class="properties-container">
+  <h3>{{title}}</h3>
+  <div [innerHTML]="summary"></div>
+
   <h5>{{properties.length+' '+(properties.length == 1 ? 'Property Summary' : 'Property Summaries')}}</h5>
   <div class="list-container">
     <table class="table">
       <tbody>
         <tr *ngFor="let p of properties" (click)="showDetails(p)">
-          <th>{{p.city_name}}{{p.state_code ? ', '+p.state_code : ''}} - {{p.name}}</th>
+          <th>{{p.city_name}}{{p.state_code ? ', '+p.state_code : ''}} - {{p.name}} <br/>
+            (Valued at ${{p.average_secvalue| number}}
+            <span *ngIf="p.sec_caprate"> with a {{p.sec_caprate}}% cap rate</span> on {{p.average_secdate|date}})</th>
         </tr>
       </tbody>
     </table>
   </div>
+  <h5 *ngIf="assetDisplayList">Loans</h5>
+  <div *ngFor="let asset of assetDisplayList">
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="asset.content">
+
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef class="header">{{asset.header}}</mat-header-cell>
+          <mat-cell *matCellDef="let element"  class="name"> {{element.name}}: </mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="value">
+            <mat-header-cell *matHeaderCellDef class="hidden"></mat-header-cell>
+            <mat-cell *matCellDef="let element" > {{element.value}} </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns" (click)="toggleDisplay(asset.id)"></mat-header-row>
+        <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hidden]="collapseAsset[asset.id]"></mat-row>
+      </mat-table>
+    </div>
+  </div>
 </div>
+
 
 <div *ngIf="name" class="details">
   <i class="fa fa-arrow-left" aria-hidden="true" (click)="name = null; backToList();"></i>

@@ -6,12 +6,12 @@
   </div>
 
   <div class="switch-container">
-    <span [class.active]="!issuerMode">Property Location</span>
+    <span [class.active]="issuerMode">Issuing Entity</span>
     <label class="switch">
       <input type="checkbox" (click)="changeMode()">
       <span class="slider round"></span>
     </label>
-    <span [class.active]="issuerMode">Issuing Entity</span>
+    <span [class.active]="!issuerMode">Property Location</span>
   </div>
 
   <div class="homepage-form" *ngIf="!issuerMode">
@@ -57,7 +57,7 @@
         {{selectedDepositor ? selectedDepositor.name : 'Select depositor'}}
       </button>
       <div class="dropdown-menu dropdown-primary dropselect">
-        <a *ngFor="let depositor of depositors" class="dropdown-item" (click)="onSelectDepositor(depositor)">{{depositor.name}}</a>
+        <a *ngFor="let depositor of depositors" class="dropdown-wrap dropdown-item" (click)="onSelectDepositor(depositor)">{{depositor.name}}</a>
       </div>
     </div>
     <div *ngIf="issuers" class="btn-group" dropdown>
@@ -65,7 +65,7 @@
         Issuing entity
       </button>
       <div class="dropdown-menu dropdown-primary dropselect">
-        <a *ngFor="let issuer of issuers" class="dropdown-item" (click)="onSelectIssuer(issuer.code)">{{issuer.name}}</a>
+        <a *ngFor="let issuer of issuers" class="dropdown-wrap dropdown-item" (click)="onSelectIssuer(issuer.code)">{{issuer.name}}</a>
       </div>
     </div>
   </div>

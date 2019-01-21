@@ -126,6 +126,17 @@ class RestApis {
         $summary['type_code'] = $type;
 
         $response = ElasticSearchQueries::getTypeSummary($state, $type);
+        $summary["max_val"] = round($response["aggregations"]["property_name"]["buckets"][0]["average_secvalue"]["value"]);
+        $summary["min_val"] = $summary["max_val"];
+        
+        $summary["max_noi"] = round($response["aggregations"]["property_name"]["buckets"][0]["average_secnoi"]["value"]);
+        $summary["min_noi"] = $summary["max_noi"];
+        
+        $summary["max_cap"] = self::getCapRate($summary["max_noi"], $summary["max_val"]);
+        $summary["min_cap"] = $summary["max_cap"];
+        
+        
+        
         foreach ($response["aggregations"]["property_name"]["buckets"] as $prop){
             $propSummary = array();
             $propSummary["name"] = $prop["key"];
@@ -137,9 +148,31 @@ class RestApis {
                     self::getCapRate($prop["average_secnoi"]["value"], $prop["average_secvalue"]["value"]);
             $propSummary["city_name"] = $prop["city"]["buckets"][0]["key"];
             $propSummary["href"] = self::url('base').'asset/'.$state.'/'.$type.'/'. urlencode($prop["key"]);
+            
+            if ( $propSummary["average_secvalue"] > $summary["max_val"]) {$summary["max_val"] = $propSummary["average_secvalue"];}
+            if ( $propSummary["average_secvalue"] < $summary["min_val"] && $propSummary["average_secvalue"]>0) 
+              {$summary["min_val"] = $propSummary["average_secvalue"];}
+            
+            if ( $propSummary["average_secnoi"] > $summary["max_noi"]) {$summary["max_noi"] = $propSummary["average_secnoi"];}
+            if ( $propSummary["average_secnoi"] < $summary["min_noi"] && $propSummary["average_secnoi"]>0) 
+              {$summary["min_noi"] = $propSummary["average_secnoi"];}
+            
+            if ( $propSummary["sec_caprate"] > $summary["max_cap"]) {$summary["max_cap"] = $propSummary["sec_caprate"];}
+            if ( $propSummary["sec_caprate"] < $summary["min_cap"] && $propSummary["sec_caprate"]) 
+              {$summary["min_cap"] = $propSummary["sec_caprate"];}
+            
+              if ($propSummary["sec_caprate"]) {
+                  $total_cap += $propSummary["sec_caprate"];
+                  $cap_count += 1;
+              }
+            
+            
 
             $summary["property"][] = $propSummary;
         }
+        $summary['mean_cap'] = round($total_cap/$cap_count,2);
+        $summary['text_description'] = CmbsAssetDisplay::propertyTypeSummary($summary);
+        
         $summary['links']['self'] = self::url('full');
         $summary['links']['parent'] = self::url('base');
         header("Content-Type:application/json");
@@ -189,18 +222,85 @@ class RestApis {
             $propSummary["type_code"] = $type;
             $propSummary["links"]["property"] = self::url('base').'asset/'.$state.'/'.$type.'/'. urlencode($prop["key"]);
             $propSummary["links"]["usage"] = self::url('base').'type/'.$state.'/'.$type;
-
-            $summary[] = $propSummary;
+            if ( $propSummary["city_name"]) {
+                $summary[] = $propSummary;}
         }
         return $summary;
+    }
+    
+    private static function assetSummary($esResponse) {
+        $summary = array();
+        foreach ($esResponse["aggregations"]["assets"]["buckets"] as $assetBucket){
+            $asset = $assetBucket["latest"]["hits"]["hits"][0]["_source"]["asset"];
+            $property = $assetBucket["latest"]["hits"]["hits"][0]["_source"]["property"];
+           
+            
+            $summary["total_property_value"] += $property["valuationSecuritizationAmount"];
+            $summary["total_noi"] += $property["netOperatingIncomeSecuritizationAmount"];
+            $summary["property_count"] += 1;
+            if ($asset["reportingPeriodEndDate"]){            
+                $summary["period_end_date"] = $asset["reportingPeriodEndDate"];
+            }
+
+            if (strcmp($property["physicalOccupancySecuritizationPercentage"], 
+                       $property["mostRecentPhysicalOccupancyPercentage"]) != 0) {
+                           error_log( $property["propertyName"]. ' ' . $property["physicalOccupancySecuritizationPercentage"] 
+                               . ' ->' .   $property["mostRecentPhysicalOccupancyPercentage"] . "\n",3 ,'/var/log/php.log') ;
+                }
+            
+            if (strcmp($asset["assetNumber"], (int)$asset["assetNumber"]) == 0){
+               $summary["asset"][$asset["assetNumber"]] = CmbsAssetDisplay::displayFormat($asset);
+               $summary["loan_count"] += 1;
+               $summary["total_loan_amount"] += $asset["originalLoanAmount"];
+               $summary["total_principal_balance"] += $asset["scheduledPrincipalBalanceSecuritizationAmount"];
+               
+               if ($asset["periodicPrincipalAndInterestPaymentSecuritizationAmount"] && $asset["paymentFrequencyCode"]) {
+                   if ($asset["paymentFrequencyCode"] == "365") {
+                       $summary["annual_scheduled_p_and_i"] +=
+                       $asset["periodicPrincipalAndInterestPaymentSecuritizationAmount"] * 365;
+                   } else {
+                       $summary["annual_scheduled_p_and_i"] +=
+                       $asset["periodicPrincipalAndInterestPaymentSecuritizationAmount"] / $asset["paymentFrequencyCode"] * 12;
+                   }                   
+               }
+               else {
+                   $summary["dscr"] = "insufficent data";
+               }
+               
+               
+               
+               $summary["period_scheduled_balance"] += $asset["reportPeriodEndScheduledLoanBalanceAmount"];
+               $summary["period_actual_balance"] += $asset["reportPeriodEndActualBalanceAmount"];
+               
+               $summary["p_and_i_outstanding"] += $asset["totalPrincipalInterestAdvancedOutstandingAmount"];
+               $summary["tax_outstanding"] += $asset["totalTaxesInsuranceAdvancesOutstandingAmount"];
+               $summary["other_expenses_outstanding"] += $asset["otherExpensesAdvancedOutstandingAmount"];
+               
+               
+            }
+            
+            $summary["period_balance_difference"] = round($summary["period_scheduled_balance"] 
+                -  $summary["period_actual_balance"]);
+            if ($summary["dscr"] != "insufficent data") {
+                $summary["dscr"] = round($summary["total_noi"]/ $summary["annual_scheduled_p_and_i"], 2 );
+            }
+        }
+         
+       return $summary;
     }
 
 
     public static function getIssuer($cik) {
+        $response = array();
         $esResponse =  ElasticSearchQueries::getIssuer($cik);
+        $response["issuing_entity"] = $esResponse["aggregations"]["issuing_entity"]["buckets"][0]["key"];
+        $response["asset_summary"] = self::assetSummary($esResponse);
         $response["property"] = self::propertySummary($esResponse);
         $response["links"]["self"] = self::url('full');
         $response["links"]["parent"] = self::url('base')."issuer";
+        $response["links"]["sec"] = "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=".$cik;
+        
+        $response["text_description"] = CmbsAssetDisplay::issuingEntitySummary($response);
         
         header("Content-Type:application/json");
         echo json_encode($response);

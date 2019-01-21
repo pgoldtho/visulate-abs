@@ -52,7 +52,7 @@ export class UsIndexComponent implements OnInit {
       if(data) {
         this.usSummary = data[0];
         this.states = data[1];
-        this.issuerMode = false;
+        this.issuerMode = true;
       }
     });
     this.sharedService.depositorsObservable$.subscribe( data => {

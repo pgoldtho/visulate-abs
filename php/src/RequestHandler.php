@@ -61,6 +61,7 @@ function execRequest($handler, $vars) {
             RestApis::getAssetDetails($vars);
             break;
         case 'get_issuer':
+      //      error_log("cik=".$vars[cik]."\n", 3, '/var/log/php.log');
             RestApis::getIssuer($vars["cik"]);
             break;
         default :

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (c) Visulate LLC 2017 All rights reserved
+ * Copyright (c) Visulate LLC 2017, 2019 All rights reserved
  */
 
 namespace CMBS;
@@ -501,7 +501,9 @@ class CmbsAssetDisplay {
                "originationDate"=> $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originationDate"],
                "loanAmount"     => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalLoanAmount"],
                "InterestRatePercentage"  => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["originalInterestRatePercentage"],
-               "NumberProperties" => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"]
+               "NumberProperties" => $entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]["NumberPropertiesSecuritization"],
+                "loanDetails" => self::displayFormat($entity["hits"]["hits"]["hits"]["0"]["_source"]["asset"]),
+                "raw" => self::decodeAsset($entity["hits"]["hits"]["hits"]["0"]["_source"])
         ));        
         }
         $result["entity_list"] = $entityList;
@@ -532,5 +534,29 @@ class CmbsAssetDisplay {
         
         $result["summary"] = $propSummary;
         return $result;
+    }
+    
+    public function propertyTypeSummary($summary) {
+        $typeSummary = "<p>".$summary['type']." properties in ". $summary['state'];
+        $typeSummary .= " appearing as collateral in CMBS transactions ranged in value at securitization from $";
+        $typeSummary .= number_format($summary['min_val']). " to $". number_format($summary['max_val']);
+        $typeSummary .= ". The net operating income varied from $". number_format($summary['min_noi']). " to $". number_format($summary['max_noi']);
+        $typeSummary .= ". Cap rates ranged from ". $summary["min_cap"]. "% to ". $summary["max_cap"]. "% with an average of ". $summary["mean_cap"]."%.";
+        $typeSummary .= "</p>";
+        return($typeSummary);
+    }
+    
+    public function issuingEntitySummary($entity) {
+        $entitySummary = '<p><a href="'.$entity["links"]["sec"].'" target="_blank">'. $entity["issuing_entity"]."</a> is collateralized by "; 
+        $entitySummary .= $entity["asset_summary"]["loan_count"]." commercial mortgage loans and secured by ";
+        $entitySummary .= count($entity["property"])  ." properties. The principal balance on these loans at securitization was $";
+        $entitySummary .= number_format(round($entity["asset_summary"]["total_principal_balance"]/1000000))."MM. The combined property value was $";
+        $entitySummary .= number_format(round($entity["asset_summary"]["total_property_value"]/1000000))."MM.</p>";
+        $entitySummary .= "<p>The scheduled principal balance on ". date_format(date_create_from_format('m-d-Y', $entity["asset_summary"]["period_end_date"]), 'F d, Y');
+        $entitySummary .= " was $". number_format(round($entity["asset_summary"]["period_scheduled_balance"]));
+        $entitySummary .= ". The actual balance was $". number_format(round($entity["asset_summary"]["period_actual_balance"]));
+        $entitySummary .= ". A difference of $". number_format(round($entity["asset_summary"]["period_balance_difference"]));
+        $entitySummary .= "</p>";
+        return $entitySummary;
     }
 }
