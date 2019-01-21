@@ -18,7 +18,7 @@ import { CollectionViewer } from "@angular/cdk/collections";
 })
 export class AssetDetailsComponent {
 
-  assetDetail: UsSummary[];
+  assetDetail: any;
 
   property = [];
   asset = [];
@@ -61,7 +61,7 @@ export class AssetDetailsComponent {
 
         let assetList = this.assetDetail.issuingEntity.entity_list;
         assetList.forEach(function (assetInstance) {
-          var assetObj = new Object();
+          var assetObj = {} as any;
           assetObj.cik = assetInstance['CIK'];
           assetObj.header = assetInstance['Loan'] + ' ' +  assetInstance['Raw']['asset']['Loan Structure']
                            + ' originated by ' + assetInstance['Raw']['asset']['Originator'] ;
