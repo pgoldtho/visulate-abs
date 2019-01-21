@@ -24,9 +24,11 @@ export class PropertyLocationsComponent {
   displayedColumns = ['name', 'value'];
   issuerCik: string;
   collapseAsset = [];
+  assetList: any[];
+  assetDisplayList: any[];
 
   title: string;
-  summary: html;
+  summary: string;
   map: any;
   zoom: any;
   center: any;
@@ -88,7 +90,7 @@ export class PropertyLocationsComponent {
           this.assetDisplayList = [];
           var self = this;
           this.assetList.forEach(function (assetInstance) {
-            var assetObj = new Object();
+            let assetObj = {} as any;
 
             assetObj.header = assetInstance['Original Loan']
 
