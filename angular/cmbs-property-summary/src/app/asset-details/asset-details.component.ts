@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { UsIndexService } from '../us-index.service';
 import { UsSummary } from '../us-summary';
 
-import { MatTableDataSource } from '@angular/material';
+import { MatTableDataSource } from '@angular/material/table';
 import { DataSource } from "@angular/cdk/table";
 import 'rxjs/add/observable/of';
 import { Observable, of } from "rxjs";
