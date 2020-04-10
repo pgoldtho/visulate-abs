@@ -8,7 +8,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { AgmCoreModule } from '@agm/core';
-import { DropdownModule, DataTableModule, SharedModule} from 'primeng/primeng';
+import { DropdownModule } from 'primeng/dropdown';
+import { TableModule } from 'primeng/table';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
 
 
@@ -35,8 +36,7 @@ import { GOOGLE_MAPS_APIKEY } from './constants';
     FormsModule,
     NoopAnimationsModule,
     DropdownModule,
-    DataTableModule,
-    SharedModule,
+    TableModule,
     MatExpansionModule,
     MatToolbarModule,
     MatIconModule,
