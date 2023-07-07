@@ -3,3 +3,11 @@ php/nbproject/*
 .DS_Store
 php/.DS_Store
 php/src/.DS_Store
+
+node_modules
+build
+npm-debug.log
+.nyc
+.env
+.vscode
+```
