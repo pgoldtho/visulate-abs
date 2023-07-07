@@ -6,6 +6,16 @@ Issuers submit data using an SEC Form ABS-EE ([example](https://www.sec.gov/Arch
 
 This project extracts data from EX-102 exhibits for Commercial Mortgage Backed Securities (CMBS) and stores it in an ElasticSearch index.  It creates one document for each property and geocodes its street address.
 
+## Find EX-102 files
+
+1. Use `scripts/get-abs-submissions.sh` to download all SEC submission files and populate a directory with only submissions that include ABS-EE files.
+2. Set an `ABS_DIRECTORY` environment variable to point to the newly populated directory and then start a nodejs process from the cmbs directory.
+3. Navigate to http://localhost:3000/cmbs/ABS-EE or http://localhost:3000/cmbs/FWP to view results in a browser
+4. Pass an `Accept: application/json` header to retrieve response as a JSON doc
+
+
+## Legacy Code
+
 Use the elasticSearchMapping.json file to create mappings for the index:
 `curl -X PUT http://localhost:9200/cmbs -d @elasticSearch/elasticSearchMapping.json  -H 'Content-Type: application/json' `
 
@@ -18,7 +28,7 @@ class PropertyGeospatial {
     const GOOGLE_API_KEY = "";  //Add API Key before use
 ```
 
-Setup an apache webserver with the following settings     
+Setup an apache webserver with the following settings
 
 ```
 LoadModule include_module libexec/apache2/mod_include.so

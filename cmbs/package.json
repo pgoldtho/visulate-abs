@@ -1,0 +1,26 @@
+{
+  "name": "cmbs",
+  "version": "1.0.0",
+  "description": "CMBS info",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "\"echo \\\"Error: no test specified\\\" && exit 1\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgoldtho/visulate-abs.git"
+  },
+  "author": "Peter Goldthorp",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pgoldtho/visulate-abs/issues"
+  },
+  "homepage": "https://github.com/pgoldtho/visulate-abs#readme",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "handlebars": "^4.7.7",
+    "pg-promise": "^11.5.0"
+  }
+}
