@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+const fileUtils  = require('./file-utils.js');
+
 
 /**
  * extractFilingsByFormType
@@ -34,6 +36,7 @@ function extractFilingsByFormType(entity, formType) {
   for (let i = 0; i < entity.filings.recent.form.length; i++) {
     if (entity.filings.recent.form[i] === formType) {
       formSubmissions.push({
+        cik : entity.cik,
         accessionNumber : entity.filings.recent.accessionNumber[i],
         filingDate : entity.filings.recent.filingDate[i],
         reportDate : entity.filings.recent.reportDate[i],
@@ -47,3 +50,43 @@ function extractFilingsByFormType(entity, formType) {
   return formSubmissions;
 }
 module.exports.extractFilingsByFormType = extractFilingsByFormType;
+
+/**
+ * filterAutoIssuers
+ *
+ * SEC does not provide a form type for ABS-EE filings in machine readable format
+ * so we need to filter out Auto loan securitizations by checking for words like
+ * 'Auto', 'BMW', 'Lease', etc.
+ * "AFS SENSUB CORP." is and ABS backed by auto leases
+ *
+ * @param { object } entities
+ * @param { string } form
+ * @returns object
+ */
+
+function filterAutoIssuers(entities, form) {
+  const filteredEntities = [];
+
+  entities.forEach(file => {
+    const e = fileUtils.parseJson(file);
+
+    if (e.name && (!(e.name.match(/auto/i) || e.name.match(/car/i) ||
+                     e.name.match(/bmw/i) || e.name.match(/mercedes/i) || e.name.match(/honda/i) ||e.name.match(/hyundai/i) ||
+                     e.name.match(/lease/i) ||e.name.match(/leasing/i) || e.name.match(/funding/i) ||
+                     e.name.match(/motorcycle/i) || e.name.match(/harley-davidson/i)||
+                     e.name.match(/afs sensub corp/i)
+                     ))) {
+
+      filteredEntities.push({
+        filename: file,
+        cik: e.cik,
+        name: e.name,
+        url: `https://www.sec.gov/Archives/edgar/data/${e.cik}`,
+        filings: extractFilingsByFormType(e, form)
+      });
+    }
+  });
+  return filteredEntities;
+}
+
+module.exports.filterAutoIssuers = filterAutoIssuers;

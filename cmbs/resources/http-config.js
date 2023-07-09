@@ -24,5 +24,13 @@ module.exports = {
     port: process.env.HTTP_PORT || 3000 ,
     corsOriginWhitelist: process.env.CORS_ORIGIN_WHITELIST ||'',
     resourceDirectory: resourceDirectory,
-    absDirectory: absDirectory
+    absDirectory: absDirectory,
+    httpHeaders: {'User-Agent': 'Visulate peter@visulate.com'}, // SEC requires a custom user agent
+    postgresConfig: {
+      host: process.env.POSTGRES_HOST ||'localhost',
+      port: process.env.POSTGRES_PORT ||5432,
+      database: process.env.POSTGRES_DB ||'cmbs',
+      user: process.env.POSTGRES_USER,
+      password: process.env.POSTGRES_PASSWORD
+    }
   };
