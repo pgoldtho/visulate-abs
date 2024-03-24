@@ -1,5 +1,5 @@
 /*!
- * Copyright 2023 Visulate LLC. All Rights Reserved.
+ * Copyright 2023, 2024 Visulate LLC. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,8 @@ const port = config.port;
  * ABS-EE submissions populate the exh_102_exhibits table
  * with data from the exhibit 102 files
  *
- * FWP submissions (will) populate the fwp table with Free Writing Prospectus submissions
+ * FWP submissions (will) populate the cmbs_prospectuses table
+ * with Free Writing Prospectus submissions
  *
  */
 
@@ -46,7 +47,8 @@ app.post('/cmbs/:form', async (req, res) => {
   const files = fileUtils.grepFiles(config.absDirectory, form);
   const eList = objectUtils.filterAutoIssuers(files, form);
 
-  const response = form === 'FWP' ? await http.insertAllFwpData(eList) : await http.insertAllExhibitData(eList);
+  const response = await http.insertAllExhibitData(eList, form);
+  // = form === 'FWP' ? await http.insertAllFwpData(eList) : await http.insertAllExhibitData(eList);
   res.json(response);
 
 });
@@ -91,6 +93,12 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
   res.json(response);
 });
 
+app.get('/fwp/:cik/:accession_number', async (req, res) => {
+  const cik = req.params.cik;
+  const accessionNumber = req.params.accession_number;
+  const response = await database.getProspectus(cik, accessionNumber, 'text');
+  res.send(response);
+});
 
 /**
  *
@@ -102,11 +110,13 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
 
 app.get('/cik/:cik', async (req, res) => {
   const cik = req.params.cik;
-  const fileObject = fileUtils.parseJson(`${config.absDirectory}/CIK000${cik}.json`);
-  const filings = objectUtils.extractFilingsByFormType(fileObject, 'ABS-EE');
-  const response = await http.getExhibitData(`${filings[0].url}/index.xml`);
+  const filename = `${config.absDirectory}/CIK000${cik}.json`;
+  const fileObject = fileUtils.parseJson(`${filename}`);
+  // const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
+  // const response = await http.getExhibitData(`${filings[0].url}/index.xml`);
+  // const response = await http.insertFwpData(filename, cik)
 
-  res.json(response);
+  res.json(fileObject);
 });
 
 app.listen(port, () => {console.log(`Example app listening at http://localhost:${port}`)});
