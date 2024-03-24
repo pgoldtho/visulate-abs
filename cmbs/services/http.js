@@ -5,12 +5,13 @@ const fileUtils = require('../utils/file-utils.js');
 const config = require('../resources/http-config.js');
 const objectUtils = require('../utils/object-utils.js');
 const Bottleneck = require('bottleneck');
+const { convert } = require('html-to-text');
 
 
-// Create a limiter to throttle requests to EDGAR to no than 10 per second
+// Create a limiter to throttle requests to EDGAR to no than 4 per second
 const limiter = new Bottleneck({
   maxConcurrent: 1,
-  minTime: 100 // 100 ms
+  minTime: 250 // 250 ms
 });
 
 
@@ -38,6 +39,16 @@ async function getExhibitData(url) {
 
 exports.getExhibitData = getExhibitData;
 
+async function getFwp(url) {
+  try {
+    const htmlResponse = await limiter.schedule(() => axios.get(url, { headers: config.httpHeaders }));
+    const html = htmlResponse.data;
+    return html;
+  } catch (error) {
+    console.error(`An error occurred: ${error.message} for url: ${url}`);
+  }
+}
+
 /**
  * insertAllExhibitData
  *
@@ -47,10 +58,11 @@ exports.getExhibitData = getExhibitData;
  * @returns object
  */
 
-async function insertAllExhibitData(eList) {
+async function insertAllExhibitData(eList, form) {
   const promises = eList.map(async (e) => {
     const trimmedCik = e.cik.replace(/^0+/, '');
-    const cikResponse = await insertExhibitData(e.filename, trimmedCik);
+    const cikResponse =  form === 'FWP'? await insertFwpData(e.filename, trimmedCik)
+                                       : await insertExhibitData(e.filename, trimmedCik);
     return { [trimmedCik]: cikResponse };
   });
   const response = await Promise.all(promises);
@@ -58,26 +70,6 @@ async function insertAllExhibitData(eList) {
 }
 
 exports.insertAllExhibitData = insertAllExhibitData;
-
-/**
- * TO DO: insertExhibitData
- *
- * Retrieve free writing prospectuses from the SEC,
- * convert from HTML to text and insert into the database
- *
- * @param {object} eList
- * @returns
- */
-
-async function insertAllFwpData(eList) {
-  const response = {
-    message: 'insertAllFwpData not yet implemented',
-    list: eList
-  }
-  return response;
-}
-
-exports.insertAllFwpData = insertAllFwpData;
 
 
 /**
@@ -116,15 +108,15 @@ async function findEx102Filename(filingUrl) {
  * Make a request to the SEC to retrieve the ex-102 exhibit data for each filing that
  * has not already been inserted into the database
  *
- * @param {*} filename
- * @param {*} cik
+ * @param { string } filename
+ * @param { string } cik
  * @returns
  */
 
 async function insertExhibitData(filename, cik) {
   const fileObject = fileUtils.parseJson(`${filename}`);
   const filings = objectUtils.extractFilingsByFormType(fileObject, 'ABS-EE');
-  const existingExhibits = await database.existingExhibits(cik);
+  const existingExhibits = await database.existingExhibits(cik, 'exh102');
   const newFilings = filings.filter(filing => !existingExhibits.includes(filing.accessionNumber));
 
   const promises = newFilings.map(async (filing) => {
@@ -141,3 +133,38 @@ async function insertExhibitData(filename, cik) {
 }
 
 exports.insertExhibitData = insertExhibitData;
+
+
+/**
+ * insertFwpData
+ *
+ * Open and parse a local JSON file containing a list of FWP filings for a given CIK
+ * Check the database to see if the filing has already been inserted
+ * Make a request to the SEC to retrieve the FWP data for each filing that
+ * has not already been inserted into the database
+ *
+ * Convert the HTML to text and insert into the database
+ *
+ * @param { string } filename
+ * @param { string } cik
+ */
+
+async function insertFwpData(filename, cik) {
+  const fileObject = fileUtils.parseJson(`${filename}`);
+  const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
+  const existingProspectuses =  await database.existingExhibits(cik, 'FWP');
+  const newFilings = filings.filter(filing => !existingProspectuses.includes(filing.accessionNumber));
+
+  const promises = newFilings.map(async (filing) => {
+    const fwpHtml = await getFwp(`${filing.url}/${filing.primaryDocument}`);
+    const htmlConvertOptions = { wordwrap: false, limits: { maxInputLength: undefined }};
+    const fwpText = convert(fwpHtml, htmlConvertOptions);
+    const dbResponse = await database.saveProspectus(filing, {html: fwpHtml, text: fwpText});
+    return { [filing.accessionNumber]:  dbResponse };
+  });
+
+  const response = newFilings.length > 0 ? await Promise.all(promises) : {message : `No new FWP filings found for CIK ${cik}`};
+  return response;
+}
+
+exports.insertFwpData = insertFwpData;

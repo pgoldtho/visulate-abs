@@ -15,6 +15,7 @@
  */
 
 const pgp = require('pg-promise')();
+const { as } = require('pg-promise');
 const config = require('../resources/http-config');
 
 const db = pgp(config.postgresConfig);
@@ -29,13 +30,18 @@ const db = pgp(config.postgresConfig);
  *
  */
 
-async function existingExhibits(cik) {
-  const exhibits = await db.any('SELECT accession_number FROM exh_102_exhibits WHERE cik = $1', cik);
+async function existingExhibits(cik, exhibitType) {
+  const query = exhibitType === 'FWP'?
+    'SELECT accession_number FROM cmbs_prospectuses WHERE cik = $1':
+    'SELECT accession_number FROM exh_102_exhibits WHERE cik = $1';
+  const exhibits = await db.any(query, cik);
   const accessionNumbers = exhibits.map(exhibit => exhibit.accession_number);
   return accessionNumbers;
 }
 
 module.exports.existingExhibits = existingExhibits;
+
+
 
 
 /**
@@ -78,6 +84,48 @@ async function saveExhibit(filing, exhibit) {
 module.exports.saveExhibit = saveExhibit;
 
 /**
+ * saveProspectus
+ *
+ * @param {object} filing
+ * @param {object} prospectus
+ * @returns string
+ *
+ */
+
+async function saveProspectus(filing, prospectus) {
+  try {
+    // Write object to Postgres table
+    const query =
+      'INSERT INTO cmbs_prospectuses ' +
+      '(cik, accession_number, filing_date, report_date, ' +
+      ' primary_document, form, size, url, ' +
+      ' prospectus_html, prospectus_text) ' +
+      ' VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)';
+      const values = [
+        filing.cik,
+        filing.accessionNumber,
+        filing.filingDate,
+        filing.reportDate === '' ? null : filing.reportDate,
+        filing.primaryDocument,
+        filing.form,
+        filing.size,
+        filing.url,
+        prospectus.html,
+        prospectus.text
+      ];
+
+    await db.none(query, values);
+
+    return 'Success!';
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+    return `Error: ${error.message}`;
+  }
+}
+
+module.exports.saveProspectus = saveProspectus;
+
+/**
  * getExhibit
  *
  * Return exhibit data for a given CIK and accession number
@@ -101,3 +149,17 @@ async function getExhibit(cik, accessionNumber) {
   }
 }
 module.exports.getExhibit = getExhibit;
+
+async function getProspectus(cik, accessionNumber, format)  {
+  const query = format === 'html'?
+    'SELECT prospectus_html FROM cmbs_prospectuses WHERE cik = $1 AND accession_number = $2':
+    'SELECT prospectus_text FROM cmbs_prospectuses WHERE cik = $1 AND accession_number = $2';
+  try {
+    const values = [cik, accessionNumber];
+    const data = await db.any(query, values);
+    return data;
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  }
+}
+module.exports.getProspectus = getProspectus;
