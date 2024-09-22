@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Summarizer and Chat Interface</title>
+    <script src="https://unpkg.com/htmx.org"></script> <!-- Include HTMX -->
+    <script src="/static/js/script.js"></script> <!-- Include custom JS -->
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        #chat-messages { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; height: 800px; overflow-y: scroll; }
+        #message-input { width: 95%; padding: 5px; margin-bottom: 5px; }
+        .message { margin-bottom: 5px; padding: 5px; background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>CMBS Term Sheet Summarizer</h1>
+    <!-- Document Submission Form -->
+    <form hx-post="/summarize_prospectus" hx-target="#chat-messages" hx-swap="beforeend" hx-include="#chat-messages">
+      <label for="document-select">CMBS:</label>
+      <select id="document-select" name="document">
+          <!-- Options will be populated by JavaScript -->
+      </select>
+      <button type="submit">Summarize</button>
+  </form>
+
+    <div id="chat-messages">
+    </div>
+
+    <!-- Chat Message Form -->
+    <form hx-post="/chat" hx-target="#chat-messages" hx-swap="beforeend" hx-include="#chat-messages">
+        <input id="message-input" type="text" name="message" placeholder="Ask a question..." required>
+        <button type="submit">Send</button>
+    </form>
+
+    <script>
+        // Scroll chat to bottom on update
+        document.body.addEventListener('htmx:afterSwap', function(evt) {
+            if (evt.detail.target.id === "chat-messages") {
+                evt.detail.target.scrollTop = evt.detail.target.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
