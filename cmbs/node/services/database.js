@@ -17,7 +17,6 @@
 const pgp = require('pg-promise')();
 const { as } = require('pg-promise');
 const config = require('../resources/http-config');
-
 const db = pgp(config.postgresConfig);
 
 /**
