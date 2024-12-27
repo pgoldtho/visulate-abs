@@ -12,7 +12,7 @@ function decodeLookup(lookupType, lookupCode, lookupTable) {
   return lookupData[lookupCode];
 }
 
-// Example usage:
+// CMBS lookup table
 const lookupTable = {
   interestAccrualMethodCode: {
     1:  "30/360",
@@ -93,7 +93,7 @@ const lookupTable = {
     ZZ: "Missing Information",
     98: "Other"
   },
-  valuationSourceCode: {
+  valuationSourceSecuritizationCode: {
     BPO: "Broker price opinion",
     MAI: "Certified MAI appraisal",
     MS: "Master servicer estimate",
@@ -109,7 +109,6 @@ const lookupTable = {
     5: "Substituted",
     6: "Same as at Securitization",
   },
-
   DefeasedStatusCode: {
     F: "Full defeasance",
     IP: "Portion of loan previously defeased",
@@ -118,8 +117,23 @@ const lookupTable = {
   },
   netOperatingIncomeNetCashFlowCode: {
     CMSA: "Calculated using CMSA standards",
+    CREFC: "Calculated using CREFC standards",
     PSA: "Calculated using a definition given in the pooling and servicing agreement",
     UW: "Calculated using underwriting method"
+  },
+  netOperatingIncomeNetCashFlowSecuritizationCode: {
+    CMSA: "Calculated using CMSA standards",
+    CREFC: "Calculated using CREFC standards",
+    PSA: "Calculated using a definition given in the pooling and servicing agreement",
+    UW: "Calculated using underwriting method"
+  },
+  debtServiceCoverageSecuritizationCode: {
+    A: "Average - Not all properties received financials, servicer allocates debt service only to properties where financials are received.",
+    C: "Consolidated - All properties reported on one \"rolled up\" financial from the borrower",
+    F: "Full - All Statements Collected for all properties",
+    N: "None - No financial statements were received",
+    P: "Partial - Not all properties received financials, servicer to leave empty",
+    W: "Worst Case - Not all properties received financial statements, servicer allocates 100% of Debt Service to all properties where financials are received"
   },
   mostRecentDebtServiceCoverageCode: {
     A: "Average - Not all properties received financials, servicer allocates debt service only to properties where financials are received.",
@@ -219,7 +233,7 @@ const lookupTable = {
     FR: "French",
     DE: "German",
   },
-  state: {
+  propertyState: {
     AL: "Alabama",
     AK: "Alaska",
     AZ: "Arizona",
@@ -273,6 +287,23 @@ const lookupTable = {
   },
 };
 
-const type = "state";
-const code = "CA";
-console.log(decodeLookup(type, code, lookupTable)); // Output: "California"
+function decodeAsset(asset, lookupTable) {
+  for (const key in asset) {
+    if (lookupTable[key]) {
+      asset[key] = lookupTable[key][asset[key]] || asset[key];
+    }
+    if (typeof asset[key] === 'object' && asset[key] !== null) {
+      decodeAsset(asset[key], lookupTable);
+    }
+  }
+  return asset;
+}
+
+function decodeAssets(jsonObject, lookupTable) {
+  if (jsonObject.assetData && jsonObject.assetData.assets) {
+    jsonObject.assetData.assets = jsonObject.assetData.assets.map(asset => decodeAsset(asset, lookupTable));
+  }
+  return jsonObject;
+}
+
+module.exports = { decodeLookup, decodeAssets, lookupTable };
