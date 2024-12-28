@@ -6,7 +6,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
-import { MatTableModule } from '@angular/material/table';
+import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 // import { AgmCoreModule } from '@agm/core';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
