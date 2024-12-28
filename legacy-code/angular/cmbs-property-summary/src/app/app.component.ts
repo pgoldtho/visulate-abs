@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Directive  } from '@angular/core';
 import { Router, RoutesRecognized } from "@angular/router";
 
 import { UsSummary } from './us-summary';
@@ -11,6 +11,8 @@ interface DropdownValue {
   code: string
 }
 
+
+@Directive()
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
