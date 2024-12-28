@@ -18,6 +18,7 @@ const pgp = require('pg-promise')();
 const { as } = require('pg-promise');
 const config = require('../resources/http-config');
 const db = pgp(config.postgresConfig);
+const { decodeAssets, lookupTable } = require('../resources/decode-lookup');
 
 /**
  * existingExhibits
@@ -142,7 +143,17 @@ async function getExhibit(cik, accessionNumber) {
     const values = [cik, accessionNumber];
 
     const data = await db.any(query, values);
-    return data;
+    if (data.length > 0) {
+      // Query should return only one row since CIK and accession number are unique
+      let exhibitDataString = JSON.stringify(data[0].exhibit_data);
+      // Parse the exhibit_data field as a JSON object
+      const exhibitData = JSON.parse(exhibitDataString);
+      // Decode values in the exhibit data
+      const decodedData = decodeAssets(exhibitData, lookupTable);
+      return decodedData;
+    } else {
+      return null;
+    }
   } catch (error) {
     console.error(`An error occurred: ${error.message}`);
   }
