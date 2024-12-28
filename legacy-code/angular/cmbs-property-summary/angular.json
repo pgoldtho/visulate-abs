@@ -113,7 +113,6 @@
       }
     }
   },
-  "defaultProject": "cmbs-property-summary",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",
