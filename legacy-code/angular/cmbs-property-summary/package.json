@@ -26,7 +26,7 @@
     "@angular/router": "^15.2.10",
     "@fullcalendar/core": "^4.4.0",
     "ajv": "^6.12.0",
-    "angular-bootstrap-md": "^14.0.0",
+    "angular-bootstrap-md": "^15.0.0",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.5",
     "font-awesome": "^4.7.0",
