@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Directive as  } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { UsIndexService } from '../us-index.service';
@@ -21,6 +21,8 @@ interface UsageSummary {
   sec_caprate: string
 }
 
+@()
+@Directive()
 @Component({
   selector: 'app-us-index',
   templateUrl: './us-index.component.html',

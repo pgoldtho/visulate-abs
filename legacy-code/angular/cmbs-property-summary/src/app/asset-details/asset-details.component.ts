@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Directive as  } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
@@ -11,6 +11,8 @@ import 'rxjs/add/observable/of';
 import { Observable, of } from "rxjs";
 import { CollectionViewer } from "@angular/cdk/collections";
 
+@()
+@Directive()
 @Component({
   selector: 'app-asset-details',
   templateUrl: './asset-details.component.html',
