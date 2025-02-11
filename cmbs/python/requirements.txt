@@ -4,7 +4,7 @@ pydantic==1.10.15
 asyncpg==0.27.0
 sentence-transformers==2.6.0
 huggingface_hub
-transformers==4.39.1
+transformers==4.48.0
 torch
 python-dotenv
 python-multipart
