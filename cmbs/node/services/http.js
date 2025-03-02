@@ -152,6 +152,13 @@ exports.insertExhibitData = insertExhibitData;
 async function insertFwpData(filename, cik) {
   const fileObject = fileUtils.parseJson(`${filename}`);
   const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
+
+  // Check if the CIK is already recorded
+  const existingEntities = await database.existingEntities();
+  if (!existingEntities.some(entity => entity.cik === parseInt(cik, 10))) {
+    await database.saveEntity(cik, filings[0].name);
+  }
+
   const existingProspectuses =  await database.existingExhibits(cik, 'FWP');
   const newFilings = filings.filter(filing => !existingProspectuses.includes(filing.accessionNumber));
 
