@@ -47,6 +47,12 @@ alter table cmbs_prospectuses add column prospectus_se tsvector
 
 create index cmbs_prospectuses_idx on cmbs_prospectuses using gin (prospectus_se);
 
+create table cmbs_issuing_entities (
+    cik INTEGER,
+    name VARCHAR(255) not null,
+    PRIMARY KEY (cik)
+);
+
 
 create table cmbs_offerings (
    cik INTEGER,

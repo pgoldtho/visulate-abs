@@ -21,6 +21,43 @@ const db = pgp(config.postgresConfig);
 const { decodeAssets, lookupTable } = require('../resources/decode-lookup');
 
 /**
+ * existingEntities
+ *
+ * Return a list of CIKs from the cmbs_issuing_entities table in the database
+ */
+
+async function existingEntities() {
+  const query = 'SELECT cik FROM cmbs_issuing_entities';
+  const entities = await db.any(query);
+  const ciks = entities.map(entity => entity.cik);
+  return ciks;
+}
+
+module.exports.existingEntities = existingEntities;
+
+/**
+ * saveEntity
+ *
+ * Populate the cmbs_issuing_entities table
+ *
+ * @param {string} cik
+ * @param {string} name
+ */
+
+async function saveEntity(cik, name) {
+  try {
+    const query = 'INSERT INTO cmbs_issuing_entities (cik, name) VALUES($1, $2)';
+    const values = [parseInt(cik, 10), name];
+    await db.none(query, values);
+    return 'Success!';
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+    return `Error: ${error.message}`;
+  }
+}
+module.exports.saveEntity = saveEntity;
+
+/**
  * existingExhibits
  *
  * Return a list accessionNumbers in the database for a given CIK

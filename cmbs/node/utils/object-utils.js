@@ -37,6 +37,7 @@ function extractFilingsByFormType(entity, formType) {
     if (entity.filings.recent.form[i] === formType) {
       formSubmissions.push({
         cik : entity.cik,
+        name : entity.name,
         accessionNumber : entity.filings.recent.accessionNumber[i],
         filingDate : entity.filings.recent.filingDate[i],
         reportDate : entity.filings.recent.reportDate[i],
