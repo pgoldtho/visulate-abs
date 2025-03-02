@@ -3,18 +3,38 @@
   <head>
     <meta charset="utf-8">
     <title>CMBS Offerings</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spcss@0.9.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/js/materialize.min.js"></script>
+      <link rel="icon" href="/static/visulate-tiny.png" type="image/png">
   </head>
   <body>
-    <ol>
+    <nav class="navbar blue darken-4">
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo" style="padding-left: 8px;">Visulate CMBS</a>
+      </div>
+    </nav>
+    <ul class="collapsible collapsible-accordion">
       {{#each this}}
-        <li><a href="{{url}}" target="cmbs-window">{{name}}</a></li>
-        <ul>
-          {{#each filings}}
-            <li><a href="{{url}}/{{primaryDocument}}" target="cmbs-window">{{filingDate}}: {{primaryDocument}} ({{size}}) </a></li>
-          {{/each}}
-        </ul>
-
+      <li>
+        <div class="collapsible-header" tabindex="0">
+          <i class="material-icons">corporate_fare</i>{{name}}
+        </div>
+        <div class="collapsible-body">
+          <ul class="collection">
+            {{#each filings}}
+              <li class="collection-item"><a href="{{url}}/{{primaryDocument}}" target="cmbs-window">{{filingDate}}: {{primaryDocument}} ({{size}}) </a></li>
+            {{/each}}
+          </ul>
+        </div>
+      </li>
       {{/each}}
-    </ol>
+    </ul>
   </body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const elems = document.querySelectorAll('.collapsible');
+      const instances = M.Collapsible.init(elems);
+    });
+  </script>
+</html>

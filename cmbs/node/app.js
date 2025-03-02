@@ -25,6 +25,9 @@ const http = require('./services/http.js');
 const app = express();
 const port = config.port;
 
+// Serve static files from the resources/static directory
+app.use('/static', express.static('resources/static'));
+
 /**
  * POST /cmbs/:form
  *
