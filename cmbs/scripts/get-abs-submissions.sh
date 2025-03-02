@@ -32,10 +32,13 @@ fi
 
 echo "Downloading $zip_url to $stage_dir/submissions.zip"
 
-status=$(curl -A "Visulate peter@visulate.com" -w %{http_code} -o "$stage_dir/submissions.zip" "$zip_url" -s)
+response=$(curl -A "Visulate peter@visulate.com" -w "%{http_code}" -o "$stage_dir/submissions.zip" "$zip_url" -s -S 2>&1)
+status=${response: -3}
+message=${response%???}
 
 if [ "$status" -ne 200 ]; then
-    echo "Failed to download the file. Exiting."
+    echo "Failed to download the file. HTTP status code: $status"
+    echo "Error message: $message"
     exit 1
 fi
 
