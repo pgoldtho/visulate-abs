@@ -48,9 +48,7 @@ app.post('/cmbs/:form', async (req, res) => {
   const eList = objectUtils.filterAutoIssuers(files, form);
 
   const response = await http.insertAllExhibitData(eList, form);
-  // = form === 'FWP' ? await http.insertAllFwpData(eList) : await http.insertAllExhibitData(eList);
   res.json(response);
-
 });
 
 /**

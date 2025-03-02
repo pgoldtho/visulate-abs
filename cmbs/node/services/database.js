@@ -41,9 +41,6 @@ async function existingExhibits(cik, exhibitType) {
 
 module.exports.existingExhibits = existingExhibits;
 
-
-
-
 /**
  * saveExhibit
  *
