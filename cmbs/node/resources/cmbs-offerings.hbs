@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>CMBS Offerings</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/js/materialize.min.js"></script>
+    <link rel="icon" href="/static/visulate-tiny.png" type="image/png">
+    <script type="module" src="/static/main.js"></script>
+  </head>
+  <body>
+    <nav class="navbar blue darken-4">
+      <div class="nav-wrapper">
+        <a href="#" class="brand-logo" style="padding-left: 8px;">Visulate CMBS</a>
+      </div>
+    </nav>
+
+    <a href="#" data-target="trusts" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+    <ul class="sidenav" id="trusts" style="top: 65px;">
+      {{#each this}}
+      <li><a href="#!" onclick="displayTermSheet({{ cik }}, '{{ accession_number }}' )"><i class="material-icons">corporate_fare</i>{{trust}}</a></li>
+      {{/each}}
+    </ul>
+
+    <pre id="offering"></pre>
+
+    <script>
+      let sidenavInstance;
+      document.addEventListener('DOMContentLoaded', function() {
+        const elems = document.querySelectorAll('.sidenav');
+        const instances = M.Sidenav.init(elems,
+        { edge: 'left', draggable: true, inDuration: 250, outDuration: 200,
+          onOpenStart: null, onCloseStart: null, onOpenEnd: null,
+          onCloseEnd: null, preventScrolling: true });
+        sidenavInstance = instances[0];
+        sidenavInstance.open();
+      });
+    </script>
+  </body>
+</html>

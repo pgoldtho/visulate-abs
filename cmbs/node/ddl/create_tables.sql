@@ -53,6 +53,26 @@ create table cmbs_issuing_entities (
     PRIMARY KEY (cik)
 );
 
+create view cmbs_term_sheets_v as
+select i.name
+,      p.cik
+,      p.accession_number
+,      p.primary_document
+,      p.filing_date
+,      p.size
+,      p.url||'/'||p.primary_document as url
+from cmbs_prospectuses p
+left outer join cmbs_issuing_entities i
+on i.cik = p.cik
+where primary_document like '%ts%'
+and primary_document not like '%pre%'
+and primary_document not like '%teaser%'
+and primary_document not like '%ants%'
+and primary_document not like '%pmk%'
+and primary_document not like '%prmk%'
+and primary_document not like '%ctsa%'
+and cast(size as INTEGER) > 1000000
+
 
 create table cmbs_offerings (
    cik INTEGER,

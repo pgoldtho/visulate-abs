@@ -153,7 +153,7 @@ async function insertFwpData(filename, cik) {
   const fileObject = fileUtils.parseJson(`${filename}`);
   const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
 
-  // Check if the CIK is already recorded
+  // Add a row to cmbs_issuing_entities if there isn't one already
   const existingEntities = await database.existingEntities();
   if (!existingEntities.some(entity => entity.cik === parseInt(cik, 10))) {
     await database.saveEntity(cik, filings[0].name);

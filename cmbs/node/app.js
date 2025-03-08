@@ -78,6 +78,16 @@ app.get('/cmbs/:form', (req, res) => {
   }
 });
 
+/**
+ * GET /cmbs
+ *
+ * Get an array of term sheets
+ *
+ */
+app.get('/cmbs', async (req, res) => {
+  const termSheets = await database.getTermSheets();
+    res.send(fileUtils.htmlFromObject(termSheets, `${config.resourceDirectory}/cmbs-offerings.hbs`));
+});
 
 /**
  * GET /filing/:cik/:accession_number

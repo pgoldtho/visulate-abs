@@ -207,3 +207,34 @@ async function getProspectus(cik, accessionNumber, format)  {
   }
 }
 module.exports.getProspectus = getProspectus;
+
+/**
+ * getTermSheets
+ *
+ */
+
+async function getTermSheets() {
+  // Query distinct accession numbers by descending CIK to list Issuing Entities
+  // (Trusts) instead of parent companies
+  const query = `
+  SELECT
+    DISTINCT ON (accession_number)
+    name ||' - '||to_char(filing_date, 'Mon YYYY') AS trust,
+    cik,
+    accession_number,
+    filing_date,
+    url
+  FROM
+    cmbs_term_sheets_v
+  ORDER BY
+    accession_number desc,
+    cik desc
+  `
+  try {
+    const data = await db.any(query);
+    return data;
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  }
+}
+module.exports.getTermSheets = getTermSheets;
