@@ -16,15 +16,42 @@
 
 require('dotenv').config()
 const express    = require('express');
+// const RedisStore = require('connect-redis').default;
+// const redis = require('redis');
+const session   = require('express-session');
 const fileUtils  = require('./utils/file-utils.js');
 const objectUtils = require('./utils/object-utils.js');
 const config = require('./resources/http-config.js');
 const database = require('./services/database.js');
 const http = require('./services/http.js');
+const genai = require('./services/genai.js');
 
 const app = express();
 const port = config.port;
 
+// TODO implement Redis session store
+// Redis session store commented out for now
+// // Initialize client.
+// let redisClient = redis.createClient({ legacyMode: true });
+// redisClient.connect().catch(console.error);
+
+// // Initialize store.
+// let redisStore = new RedisStore({
+//     client: redisClient,
+//     prefix: 'visulate-abs:',
+//   });
+
+
+
+app.use(session({
+  // store: redisStore,
+  secret: 'daklawetiou23589089035jklDLK;LKSDAFKsdfui',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set to true if using HTTPS
+}));
+
+app.use(express.json());
 // Serve static files from the resources/static directory
 app.use('/static', express.static('resources/static'));
 
@@ -104,11 +131,34 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
   res.json(response);
 });
 
+/**
+ * GET /fwp/:cik/:accession_number
+ *  Return an HTML summary of the Free Writing Prospectus
+ *
+ */
+
 app.get('/fwp/:cik/:accession_number', async (req, res) => {
   const cik = req.params.cik;
   const accessionNumber = req.params.accession_number;
-  const response = await database.getProspectus(cik, accessionNumber, 'text');
-  res.send(response);
+  const prospectus = await database.getProspectus(cik, accessionNumber, 'text');
+  const summary = await genai.documentSummary(prospectus[0].prospectus_text, process.env.GEMINI_API_KEY, req);
+  res.send(summary);
+});
+
+app.post('/chat', async (req, res) => {
+  const question = req.body.question; // Assuming you send the question in the request body
+  const sessionId = req.session.id; // get the sessionId from the session
+  if (!question || !sessionId) {
+      return res.status(400).send('Question and sessionId are required');
+  }
+
+  try {
+      const response = await genai.chat(question, process.env.GEMINI_API_KEY, req); //pass the req object.
+      res.send(response);
+  } catch (error) {
+      console.error("Error in chat route:", error);
+      res.status(500).send(error.message);
+  }
 });
 
 /**
@@ -123,10 +173,6 @@ app.get('/cik/:cik', async (req, res) => {
   const cik = req.params.cik;
   const filename = `${config.absDirectory}/CIK000${cik}.json`;
   const fileObject = fileUtils.parseJson(`${filename}`);
-  // const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
-  // const response = await http.getExhibitData(`${filings[0].url}/index.xml`);
-  // const response = await http.insertFwpData(filename, cik)
-
   res.json(fileObject);
 });
 

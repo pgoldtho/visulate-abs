@@ -18,13 +18,16 @@
   },
   "homepage": "https://github.com/pgoldtho/visulate-abs#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.0",
     "axios": "^1.4.0",
     "bottleneck": "^2.19.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
+    "express-session": "^1.18.1",
     "fast-xml-parser": "^4.2.5",
     "handlebars": "^4.7.7",
     "html-to-text": "^9.0.5",
+    "marked": "^15.0.7",
     "pg-promise": "^11.5.0"
   }
 }
