@@ -1,0 +1,144 @@
+/* Basic chat styling */
+#offering {
+  padding: 16px;
+  font-family: sans-serif;
+  line-height: 1.6;
+  overflow-y: auto;
+  max-height: 80vh; /* Adjust as needed */
+  scrollbar-width: none;
+  scrollbar-color: #ccc transparent;
+}
+
+/* WebKit (Chrome, Safari) scrollbar styles */
+#offering::-webkit-scrollbar {
+  width: 8px; /* Adjust width as needed */
+}
+
+#offering::-webkit-scrollbar-track {
+  background-color: transparent; /* Make the track transparent */
+}
+
+#offering::-webkit-scrollbar-thumb {
+  background-color: #ccc; /* Light gray for the thumb */
+  border-radius: 4px;
+}
+
+/* User Question Styles */
+.user-question {
+  background-color: #e0f7fa; /* Light cyan/aqua */
+  border: 1px solid #b2ebf2; /* Darker border for definition */
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px; /* Rounded corners */
+  text-align: right; /* Align to the right */
+  clear: both; /* Clear floats, if needed */
+  position: relative; /* For potential future adjustments */
+  max-width: 80%; /* Keep messages from taking up full width */
+  margin-left: auto; /* Align to the right */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  word-wrap: break-word; /* Long words will break */
+}
+
+.user-question::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  right: -10px;
+  border-top: 10px solid transparent;
+  border-left: 10px solid #b2ebf2;
+  border-bottom: 10px solid transparent;
+}
+
+/* Chat Response Styles */
+.chat-response {
+  background-color: #f5f5f5; /* Light gray */
+  border: 1px solid #ddd; /* Light gray border */
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 10px; /* Rounded corners */
+  text-align: left; /* Align to the left */
+  clear: both; /* Clear floats, if needed */
+  position: relative; /* For potential future adjustments */
+  max-width: 80%; /* Keep messages from taking up full width */
+  margin-right: auto; /* Align to the left */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  word-wrap: break-word; /* Long words will break */
+}
+
+.chat-response::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: -10px;
+  border-top: 10px solid transparent;
+  border-right: 10px solid #ddd;
+  border-bottom: 10px solid transparent;
+}
+
+/* Code blocks and pre-formatted text */
+.chat-response pre {
+  background-color: #eee; /* Light gray background for code */
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto; /* Horizontal scrolling for long code lines */
+  white-space: pre-wrap; /* Preserve line breaks */
+  font-family: monospace;
+}
+
+/* Lists */
+.chat-response ul, .chat-response ol {
+  margin: 10px 0;
+  padding-left: 30px;
+}
+
+/* Blockquotes */
+.chat-response blockquote {
+  border-left: 5px solid #ddd;
+  padding-left: 10px;
+  margin: 10px 0;
+}
+
+/* Links */
+.chat-response a {
+  color: #007bff; /* Blue for links */
+  text-decoration: none;
+}
+
+/* Headers */
+.chat-response h1, .chat-response h2, .chat-response h3, .chat-response h4, .chat-response h5, .chat-response h6 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+
+/* Chat Form Styles */
+#chat-form {
+  position: relative; /* Needed for absolute positioning of the FAB */
+  margin-bottom: 20px; /* Add some space below the chat area */
+}
+
+#chat-input {
+  padding-right: 60px; /* Make space for the FAB */
+  /* New Styles for consistency */
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 10px; /* Rounded corners */
+  padding: 12px; /* Consistent padding */
+  box-shadow: none; /* Remove default shadow */
+  min-height: 70px;
+}
+
+#chat-submit-fab {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+}
+
+#chat-submit-fab i {
+  margin: 0; /* Remove default icon margins */
+}
+
+/* Remove the focus style */
+#chat-input:focus {
+  border-bottom: 1px solid #ccc !important;
+  box-shadow: 0 1px 0 0 #ccc !important;
+}
