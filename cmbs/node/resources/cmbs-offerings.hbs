@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>CMBS Offerings</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/css/materialize.min.css">
     <link rel="stylesheet" href="/static/main.css">
@@ -12,29 +13,37 @@
   </head>
   <body>
 
+    {{!-- Navigation Bar --}}
     <nav class="navbar blue darken-4">
       <div class="nav-wrapper">
         <a href="#" class="brand-logo" style="padding-left: 8px;">Visulate CMBS</a>
-        <ul class="right hide-on-med-and-down">
+        <ul class="right">
           <li><a href="#" data-target="trusts" class="sidenav-trigger"><i class="material-icons">menu</i></a></li>
         </ul>
       </div>
+      <ul class="sidenav" id="trusts" style="top: 65px;">
+        {{#each this}}
+        <li><a href="#!" onclick="displayTermSheet({{ cik }}, '{{ accession_number }}', '{{trust}}' )"><i class="material-icons">corporate_fare</i>{{trust}}</a></li>
+        {{/each}}
+      </ul>
     </nav>
 
 
-    <ul class="sidenav" id="trusts" style="top: 65px;">
-      {{#each this}}
-      <li><a href="#!" onclick="displayTermSheet({{ cik }}, '{{ accession_number }}', '{{trust}}' )"><i class="material-icons">corporate_fare</i>{{trust}}</a></li>
-      {{/each}}
-    </ul>
 
+    {{!-- Main Content --}}
     <div class="container">
-      <h5 id="title">CMBS Offerings</h5>
-      <div id="offering"></div>
+      <div class="row">
+        <div class="col s12">  {{!-- Full width on small screens --}}
+          <h5 id="title">CMBS Offerings</h5>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col s12" id="offering"></div>  {{!-- Full width on small screens --}}
+      </div>
 
     {{!-- display a working dialog during long running operations --}}
       <div class="row" >
-        <div class="col s6 offset-s4" id="working-dialog" style="display: none;">
+        <div class="col s12 m8 offset-m2" id="working-dialog" style="display: none;"> {{!-- Full width on small screens, 8 columns on medium and up --}}
           <div class="card-panel ">
             <span id="working-message">Working...
             </span>
@@ -45,6 +54,8 @@
 
       {{!-- Follow-up questions --}}
       <div class="row">
+        <div class="col s12 m10 offset-m1">
+          <h5>Follow-up Questions</h5>
         <form class="col s12" id="chat-form">
           <div class="row">
             <div class="input-field col s12">
@@ -54,6 +65,8 @@
             </div>
           </div>
         </form>
+        </div>
+
       </div>
 
     </div>  {{!-- container --}}
