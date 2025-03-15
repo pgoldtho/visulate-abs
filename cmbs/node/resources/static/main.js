@@ -46,7 +46,7 @@ async function handleChatSubmit(question) { // Remove the 'event' parameter
   if (question) {
     showWorking(`Asking: ${question} ...`);
     try {
-      const response = await fetch('/chat', {
+      const response = await fetch('/ai/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -93,28 +93,71 @@ function scrollToBottom() {
   offeringContainer.scrollTop = offeringContainer.scrollHeight;
 }
 
-export async function displayTermSheet(cik, accessionNumber, title) {
+
+
+export async function reviewOffering(cik, accessionNumber, title) {
   document.getElementById('title').innerHTML = title;
   try {
     closeSideBar();
+    // Review the Term Sheet
     showWorking(`Reviewing ${title} ...`);
 
-    const response = await fetch(`/fwp/${cik}/${accessionNumber}`);
-    const responseText = await response.text();
+    const offeringContainer = document.getElementById('offering');
+    let response = await fetch(`/ai/term-sheet/${cik}/${accessionNumber}`);
+    let responseText = await response.text();
 
     if (responseText) {
       hideWorking();
-      const offeringContainer = document.getElementById('offering');
-      offeringContainer.innerHTML = responseText; // Set innerHTML to display markdown
+      offeringContainer.innerHTML = '<h5>Term Sheet Summary</h5>';
+      offeringContainer.innerHTML += responseText;
 
       // Wait for the DOM to update and the browser to render the response, then scroll
       setTimeout(scrollToBottom, 0);
     } else {
       console.error('No data received from the API.');
     }
+
+    // Analyze the Assets from the latest EXH 102
+    showWorking('Analyzing the latest assets ...');
+    response = await fetch(`/ai/assets/${cik}`);
+    responseText = await response.text();
+
+    if (responseText) {
+      hideWorking();
+      offeringContainer.innerHTML += '<h5>Assets Analysis</h5>';
+      offeringContainer.innerHTML += responseText;
+
+      // Wait for the DOM to update and the browser to render the response, then scroll
+      setTimeout(scrollToBottom, 0);
+    } else {
+      console.error('No data received from the API.');
+    }
+
+
+
+    // Analyze the Collateral from the latest EXH 102
+    showWorking('Analyzing the latest collateral ...');
+    response = await fetch(`/ai/collateral/${cik}`);
+    responseText = await response.text();
+
+    if (responseText) {
+      hideWorking();
+      offeringContainer.innerHTML += '<h5>Collateral Analysis</h5>';;
+      offeringContainer.innerHTML += responseText;
+
+      // Wait for the DOM to update and the browser to render the response, then scroll
+      setTimeout(scrollToBottom, 0);
+    } else {
+      console.error('No data received from the API.');
+    }
+
+
+
+
+
   } catch (error) {
     console.error('Error fetching or displaying prospectus:', error);
   }
 }
 
-window.displayTermSheet = displayTermSheet;
+window.reviewOffering = reviewOffering;

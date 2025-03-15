@@ -194,19 +194,160 @@ async function getExhibit(cik, accessionNumber) {
 }
 module.exports.getExhibit = getExhibit;
 
-async function getProspectus(cik, accessionNumber, format)  {
-  const query = format === 'html'?
-    'SELECT prospectus_html FROM cmbs_prospectuses WHERE cik = $1 AND accession_number = $2':
-    'SELECT prospectus_text FROM cmbs_prospectuses WHERE cik = $1 AND accession_number = $2';
+async function getProspectus(cik, accessionNumber)  {
+  const query =
+    `SELECT
+      prospectus_text,
+      filing_date,
+      url||'/'||primary_document as url
+     FROM cmbs_prospectuses
+     WHERE cik = $1 AND accession_number = $2`;
   try {
     const values = [cik, accessionNumber];
+    const data = await db.any(query, values);
+    return data[0];
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  }
+}
+module.exports.getProspectus = getProspectus;
+
+async function getLatestAssets(cik) {
+  const query = `
+    SELECT
+    a.filing_date,
+    a.url||'/'||a.primary_document as url,
+    a.asset_number,
+    a.maturity_date,
+    a.originator_name,
+    a.asset_type_number,
+    a.origination_date,
+    a.paid_through_date,
+    a.payment_type,
+    a.balloon_indicator,
+    a.loan_structure,
+    a.modified_indicator,
+    a.original_loan_amount,
+    a.asset_added_indicator,
+    a.primary_servicer_name,
+    a.payment_frequency,
+    a.interest_only_indicator,
+    a.payment_status_loan,
+    a.grace_days_allowed_number,
+    a.original_term_loan_number,
+    a.reporting_period_end_date,
+    a.first_loan_payment_due_date,
+    a.scheduled_interest_amount,
+    a.scheduled_principal_amount,
+    a.interest_accrual_method_code,
+    a.interest_accrual_method,
+    a.next_interest_rate_percentage,
+    a.non_recoverability_indicator,
+    a.prepayment_premium_indicator,
+    a.servicing_advance_method_code,
+    a.servicing_advance_method,
+    a.asset_subject_demand_indicator,
+    a.original_interest_rate_type_code,
+    a.original_interest_rate_type,
+    a.reporting_period_beginning_date,
+    a.negative_amortization_indicator,
+    a.lien_position_securitization,
+    a.original_interest_only_term_number,
+    a.original_interest_rate_percentage,
+    a.servicer_trustee_fee_rate_percentage,
+    a.report_period_modification_indicator,
+    a.report_period_end_actual_balance_amount,
+    a.report_period_interest_rate_percentage,
+    a.unscheduled_principal_collected_amount,
+    a.interest_rate_securitization_percentage,
+    a.other_expenses_advanced_outstanding_amount,
+    a.total_scheduled_principal_interest_due_amount,
+    a.report_period_end_scheduled_loan_balance_amount,
+    a.total_taxes_insurance_advances_outstanding_amount,
+    a.scheduled_principal_balance_securitization_amount,
+    a.report_period_beginning_schedule_loan_balance_amount,
+    a.total_principal_interest_advanced_outstanding_amount
+    from public.latest_exh_102_exhibits l
+    join cmbs_assets_v a
+    on a.cik = l.cik
+    and a.accession_number = l.accession_number
+    where l.cik=$1`;
+    try {
+      const values = [cik];
+      const data = await db.any(query, values);
+      return data;
+    } catch (error) {
+      console.error(`An error occurred: ${error.message}`);
+    }
+  }
+  module.exports.getLatestAssets = getLatestAssets;
+
+async function getLatestCollateral(cik) {
+  const query = `
+    SELECT
+      c.url||'/'||c.primary_document as url,
+      c.filing_date,
+      c.asset_number,
+      c.location,
+      c.property_name,
+      c.year_built,
+      c.year_last_renovated,
+      c.units_beds_rooms as units_or_bed_rooms,
+      c.property_type,
+      c.defeased_status,
+      c.property_status,
+      c.largest_tenant,
+      c.square_feet_largest_tenant,
+      c.lease_expiration_largest_tenant_date,
+      c.second_largest_tenant,
+      c.square_feet_second_largest_tenant,
+      c.lease_expiration_second_largest_tenant_date,
+      c.third_largest_tenant,
+      c.square_feet_third_largest_tenant,
+      c.lease_expiration_third_largest_tenant_date,
+      c.most_recent_annual_lease_rollover_review_date,
+      c.net_rentable_square_feet_securitization,
+      c.physical_occupancy_securitization_percentage,
+      c.valuation_securitization_date,
+      c.valuation_securitization_amount,
+      c.valuation_source_securitization,
+      c.financials_securitization_date,
+      c.revenue_securitization_amount,
+      c.operating_expenses_securitization_amount,
+      c.noi_securitization_amount,
+      c.noi_net_cash_flow_securitization_method,
+      c.net_cash_flow_flow_securitization_amount,
+      c.dsc_noi_securitization_percentage,
+      c.dsc_net_cash_flow_securitization_percentage,
+      c.most_recent_physical_occupancy_percentage,
+      c.net_rentable_square_feet,
+      c.most_recent_valuation_date,
+      c.most_recent_valuation_amount,
+      c.most_recent_valuation_source,
+      c.most_recent_financials_start_date,
+      c.most_recent_financials_end_date,
+      c.current_revenue as current_annual_revenue,
+      c.operating_expenses_amount,
+      c.current_operating_expenses,
+      c.current_noi,
+      c.current_net_cash_flow,
+      c.noi_net_cash_flow_method,
+      c.most_recent_debt_service_amount,
+      c.most_recent_dsc_noi_percentage,
+      c.most_recent_dsc_net_cash_flow_percentage
+  FROM public.latest_exh_102_exhibits l
+  JOIN cmbs_collateral_v c ON c.cik = l.cik AND c.accession_number = l.accession_number
+  WHERE l.cik = $1
+  `;
+  try {
+    const values = [cik];
     const data = await db.any(query, values);
     return data;
   } catch (error) {
     console.error(`An error occurred: ${error.message}`);
   }
 }
-module.exports.getProspectus = getProspectus;
+module.exports.getLatestCollateral = getLatestCollateral;
 
 /**
  * getTermSheets
