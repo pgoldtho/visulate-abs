@@ -5,7 +5,7 @@
   line-height: 1.6;
   overflow-y: auto;
   max-height: 80vh; /* Adjust as needed */
-  scrollbar-width: none;
+  scrollbar-width: thin; /* Firefox scrollbar width */
   scrollbar-color: #ccc transparent;
 }
 

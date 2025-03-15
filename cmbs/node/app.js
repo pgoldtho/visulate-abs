@@ -137,15 +137,30 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
  *
  */
 
-app.get('/fwp/:cik/:accession_number', async (req, res) => {
+app.get('/ai/term-sheet/:cik/:accession_number', async (req, res) => {
   const cik = req.params.cik;
   const accessionNumber = req.params.accession_number;
-  const prospectus = await database.getProspectus(cik, accessionNumber, 'text');
-  const summary = await genai.documentSummary(prospectus[0].prospectus_text, process.env.GEMINI_API_KEY, req);
+  const prospectus = await database.getProspectus(cik, accessionNumber);
+  const summary = await genai.termSheetSummary(prospectus, process.env.GEMINI_API_KEY, req);
   res.send(summary);
 });
 
-app.post('/chat', async (req, res) => {
+app.get('/ai/assets/:cik', async (req, res) => {
+  const cik = req.params.cik;
+  const assets = await database.getLatestAssets(cik);
+  const summary = await genai.assetsAnalysis(assets, process.env.GEMINI_API_KEY, req);
+  res.send(summary);
+});
+
+
+app.get('/ai/collateral/:cik', async (req, res) => {
+  const cik = req.params.cik;
+  const collateral = await database.getLatestCollateral(cik);
+  const summary = await genai.collateralAnalysis(collateral, process.env.GEMINI_API_KEY, req);
+  res.send(summary);
+});
+
+app.post('/ai/chat', async (req, res) => {
   const question = req.body.question; // Assuming you send the question in the request body
   const sessionId = req.session.id; // get the sessionId from the session
   if (!question || !sessionId) {

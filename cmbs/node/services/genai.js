@@ -40,7 +40,16 @@ async function sendToLLM(req, message, apiKey) {
       to distill this information into a clear and concise summary.
 
       Avoid using conversational language. Focus on the key facts and figures that are relevant to the
-      investor's decision-making process.
+      investor's decision-making process. When analyzing the data, look for any discrepancies in the
+      supplied values. Pay less attention to missing or null values.
+
+      Format your response for readability. Add commas to large numbers and add a currency symbol where
+      appropriate (e.g. "$4,522,793" instead  of "4522793"). Convert percentages expressed as decimal
+      values to percentages (e.g., 0.05 to 5%).
+
+      When referring to values supplied in JSON format, avoid making references to the JSON document or its keys.
+      Instead, use natural language descriptions. For example, instead of "scheduled_principal_amount",
+      refer to the "scheduled principal amount" or "scheduled principal".
     `;
 
     // Get the history from the session
@@ -78,6 +87,12 @@ async function sendToLLM(req, message, apiKey) {
   }
 }
 
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  const options = { year: 'numeric', month: 'short', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options);
+}
+
 /**
  * documentSummary
  *
@@ -89,15 +104,68 @@ async function sendToLLM(req, message, apiKey) {
  * @returns {Promise<string>} - The analysis results as HTML.
  * @throws {Error} - If there is an error communicating with the Gemini API.
  */
-async function documentSummary(document, apiKey, req) {
+async function termSheetSummary(document, apiKey, req) {
   // Reset the session when this function is called
   resetSession(req);
 
-  const prompt = `
-    Summarize the following CMBS term sheet:
-    ${document}`;
+  let response = `<a href="${document.url}" target="_blank">Original Term Sheet filed on ${formatDate(document.filing_date)}</a><br>`;
 
-  return await sendToLLM(req, prompt, apiKey);
+  let prompt = `
+    Summarize the following CMBS term sheet dated ${document.filing_date}:
+
+    ${document.prospectus_text}
+
+    Provide a concise summary of the key points of the term sheet,
+    focusing on the loan characteristics, deal structure, and underlying properties.`;
+
+  response += await sendToLLM(req, prompt, apiKey);
+
+  return response;
+}
+
+async function assetsAnalysis(assets, apiKey, req) {
+  let response = `Analysis from the <a href="${assets[0].url}" target="_blank">latest EXH 102 for this offering filed on ${formatDate(assets[0].filing_date)}</a><br>`;
+  let prompt = `
+    The following document dated ${assets[0].filing_date} has the latest EXH 102 data for the loan assets.
+    Each asset has been assigned an asset number. This will be an integer value for Single-Asset/Single-Borrower loans.
+    Multi-Asset/Multi-Borrower (MABA) loans will have an integer value for the asset with sub values for the individual properties.
+    For example MAMB loan 3 could have properties 3.01, 3.02, 3.03, or 3-001, 3-002, 3-003 .. etc. Some of the values for these assets
+    are rolled up to the parent asset e.g 3 and not repeated for the sub assets.
+
+    Note the filing date of EXH 102 and compared to the term sheet. Compare the "securitization" values to the
+    "current" ones. Highlight any with significant differences. Also lookout for
+    suspicious values like values that remain unchanged over an extended period of time. Compare the
+    performance of the assets to the underwriting assumptions. Here is the asset data:
+
+    ${JSON.stringify(assets)}
+
+
+    ANALYZE THE DATA IN THE EXH 102 DOCUMENT NOT THE DOCUMENT ITSELF
+    and don't forget to format large numbers for readability.`;
+
+
+
+  response += await sendToLLM(req, prompt, apiKey);
+  return response;
+}
+
+
+async function collateralAnalysis(collateral, apiKey, req) {
+  let prompt = `
+    The following document dated ${collateral[0].filing_date} has the latest EXH 102 data for the properties used as collateral
+    For the loans. Note that the asset numbers in this document correspond to the asset numbers in the assets document.
+
+    Review the financial performance of these properties looking properties that are underperforming or performing better than expected.
+    Compare the "securitization" values to the "current" ones. Highlight any with significant differences. Compare the
+    performance of the assets to the underwriting assumptions. Note the filing date of EXH 102 and compared to the term sheet.
+    Here is the collateral data:
+
+    ${JSON.stringify(collateral)}
+
+    ANALYZE THE DATA IN THE EXH 102 DOCUMENT NOT THE DOCUMENT ITSELF.`;
+
+  let response = await sendToLLM(req, prompt, apiKey);
+  return response;
 }
 
 /**
@@ -115,4 +183,4 @@ async function chat(question, apiKey, req) {
   return await sendToLLM(req, question, apiKey);
 }
 
-module.exports = { documentSummary, chat };
+module.exports = { termSheetSummary, collateralAnalysis, assetsAnalysis, chat };
