@@ -1,15 +1,44 @@
-let sidenavInstance;
+let previousSelection = null;
 
 export function addEventListeners() {
-
   document.addEventListener('DOMContentLoaded', function() {
-    const elems = document.querySelectorAll('.sidenav');
-    const instances = M.Sidenav.init(elems,
-    { edge: 'left', draggable: true, inDuration: 250, outDuration: 200,
-      onOpenStart: null, onCloseStart: null, onOpenEnd: null,
-      onCloseEnd: null, preventScrolling: true });
-    sidenavInstance = instances[0];
-    sidenavInstance.open();
+    // Initialize the autocomplete
+    let elems = document.querySelectorAll('.autocomplete');
+    const trusts = window.trusts;
+    const autocompleteData = trusts.map(trust => {
+      return {
+        id: trust.cik,
+        text: trust.trust
+      };
+    });
+    let instances = M.Autocomplete.init(elems, {
+      minLength: 0, // shows instantly
+      isMultiSelect: false,
+      data: autocompleteData,
+      limit: 10,
+      onSearch: (text, autocomplete) => {
+        const filteredData = autocompleteData.filter(item => item.text.toLowerCase().includes(text.toLowerCase()));
+        autocomplete.setMenuItems(filteredData);
+      }
+    });
+
+    const autocompleteInstance = instances[0];
+    // call the reviewOffering function when a CMBS trust is selected
+    autocompleteInstance.el.addEventListener('change', function(event) {
+      const selectedText = event.target.value;
+      const trust = trusts.find(trust => trust.trust === selectedText);
+      if (trust === previousSelection || !trust) {
+        return;
+      }
+      previousSelection = trust;
+      reviewOffering(trust.cik, trust.accession_number, trust.trust);
+    });
+
+    // Set focus to the autocomplete input
+    const autocompleteInput = document.getElementById('autocomplete-input');
+    autocompleteInput.focus();
+    autocompleteInstance.open();
+    autocompleteInstance.options.onSearch('', autocompleteInstance);
   });
 
   // Add event listener for the chat form
@@ -65,16 +94,8 @@ async function handleChatSubmit(question) { // Remove the 'event' parameter
   }
 }
 
-function closeSideBar() {
-  if (sidenavInstance) {
-    if (document.activeElement) {
-      document.activeElement.blur(); // Remove focus before hiding.
-    }
-    sidenavInstance.close();
-  }
-}
-
 function showWorking(message) {
+  document.getElementById('follow-up-questions').style.display = 'none';
   const working = document.getElementById('working-dialog');
   const workingMessage = document.getElementById('working-message');
   workingMessage.innerHTML = message;
@@ -82,6 +103,7 @@ function showWorking(message) {
 }
 
 function hideWorking() {
+  document.getElementById('follow-up-questions').style.display = 'block';
   const chatInput = document.getElementById('chat-input');
   chatInput.focus();
   const working = document.getElementById('working-dialog');
@@ -93,12 +115,9 @@ function scrollToBottom() {
   offeringContainer.scrollTop = offeringContainer.scrollHeight;
 }
 
-
-
 export async function reviewOffering(cik, accessionNumber, title) {
-  document.getElementById('title').innerHTML = title;
+  // document.getElementById('title').innerHTML = title;
   try {
-    closeSideBar();
     // Review the Term Sheet
     showWorking(`Reviewing ${title} ...`);
 
@@ -118,7 +137,7 @@ export async function reviewOffering(cik, accessionNumber, title) {
     }
 
     // Analyze the Assets from the latest EXH 102
-    showWorking('Analyzing the latest assets ...');
+    showWorking('Analyzing asset data from the latest EXH 102 ...');
     response = await fetch(`/ai/assets/${cik}`);
     responseText = await response.text();
 
@@ -133,10 +152,8 @@ export async function reviewOffering(cik, accessionNumber, title) {
       console.error('No data received from the API.');
     }
 
-
-
     // Analyze the Collateral from the latest EXH 102
-    showWorking('Analyzing the latest collateral ...');
+    showWorking('Analyzing property data from the latest EXH 102 ...');
     response = await fetch(`/ai/collateral/${cik}`);
     responseText = await response.text();
 
@@ -150,10 +167,6 @@ export async function reviewOffering(cik, accessionNumber, title) {
     } else {
       console.error('No data received from the API.');
     }
-
-
-
-
 
   } catch (error) {
     console.error('Error fetching or displaying prospectus:', error);

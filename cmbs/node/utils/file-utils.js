@@ -64,6 +64,11 @@ module.exports.parseJson = parseJson;
 function htmlFromObject(obj, templateFile) {
   const fs = require('fs');
   const Handlebars = require('handlebars');
+  // Register the 'json' helper
+  Handlebars.registerHelper('json', function(context) {
+    return JSON.stringify(context);
+  });
+
   const html = fs.readFileSync(templateFile, 'utf8');
   const template = Handlebars.compile(html);
   return template(obj);

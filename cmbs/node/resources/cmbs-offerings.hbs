@@ -17,29 +17,29 @@
     <nav class="navbar blue darken-4">
       <div class="nav-wrapper">
         <a href="#" class="brand-logo" style="padding-left: 8px;">Visulate CMBS</a>
-        <ul class="right">
-          <li><a href="#" data-target="trusts" class="sidenav-trigger"><i class="material-icons">menu</i></a></li>
-        </ul>
       </div>
-      <ul class="sidenav" id="trusts" style="top: 65px;">
-        {{#each this}}
-        <li><a href="#!" onclick="reviewOffering({{ cik }}, '{{ accession_number }}', '{{trust}}' )"><i class="material-icons">corporate_fare</i>{{trust}}</a></li>
-        {{/each}}
-      </ul>
     </nav>
-
-
 
     {{!-- Main Content --}}
     <div class="container">
-      <div class="row">
-        <div class="col s12">  {{!-- Full width on small screens --}}
-          <h5 id="title">CMBS Offerings</h5>
+
+      {{!-- CMBS Offering selection --}}
+      <div class="row" style="margin-top: 15px;">
+        <div class="col s12">
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix">corporate_fare</i>
+              <input type="text" id="autocomplete-input" class="autocomplete">
+              <label for="autocomplete-input">Select a CMBS Offering</label>
+            </div>
+          </div>
         </div>
       </div>
+
       <div class="row">
         <div class="col s12" id="offering"></div>  {{!-- Full width on small screens --}}
       </div>
+
 
     {{!-- display a working dialog during long running operations --}}
       <div class="row" >
@@ -53,20 +53,18 @@
       </div>
 
       {{!-- Follow-up questions --}}
-      <div class="row">
+      <div class="row" id="follow-up-questions" style="display: none;">
         <div class="col s12 m10 offset-m1">
-          <h5>Follow-up Questions</h5>
-        <form class="col s12" id="chat-form">
-          <div class="row">
-            <div class="input-field col s12">
-              <textarea id="chat-input" class="materialize-textarea" placeholder=" "></textarea>
-              <label for="chat-input">Follow-up Questions</label>
-              <a id="chat-submit-fab" class="btn-floating btn-large waves-effect waves-light blue"><i class="material-icons">send</i></a>
+          <form class="col s12" id="chat-form">
+            <div class="row">
+              <div class="input-field col s12">
+                <textarea id="chat-input" class="materialize-textarea" placeholder=" "></textarea>
+                <label for="chat-input">Follow-up Questions</label>
+              <a id="chat-submit-fab" class="btn-floating btn-small waves-effect waves-light blue"><i class="material-icons">send</i></a>
+              </div>
             </div>
-          </div>
-        </form>
+          </form>
         </div>
-
       </div>
 
     </div>  {{!-- container --}}
@@ -74,6 +72,9 @@
     <script type="module">
       import { addEventListeners } from '/static/main.js';
       addEventListeners();
+    </script>
+    <script>
+      window.trusts = {{{json this}}};
     </script>
   </body>
 </html>

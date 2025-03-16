@@ -135,7 +135,7 @@ async function assetsAnalysis(assets, apiKey, req) {
     Note the filing date of EXH 102 and compared to the term sheet. Compare the "securitization" values to the
     "current" ones. Highlight any with significant differences. Also lookout for
     suspicious values like values that remain unchanged over an extended period of time. Compare the
-    performance of the assets to the underwriting assumptions. Here is the asset data:
+    performance of the assets to any assumptions made in the term sheet. Here is the asset data:
 
     ${JSON.stringify(assets)}
 
