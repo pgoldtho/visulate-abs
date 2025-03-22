@@ -53,26 +53,24 @@ create table cmbs_issuing_entities (
     PRIMARY KEY (cik)
 );
 
-create view cmbs_term_sheets_v as
-select i.name
-,      p.cik
-,      p.accession_number
-,      p.primary_document
-,      p.filing_date
-,      p.size
-,      p.url||'/'||p.primary_document as url
-from cmbs_prospectuses p
-left outer join cmbs_issuing_entities i
-on i.cik = p.cik
-where primary_document like '%ts%'
-and primary_document not like '%pre%'
-and primary_document not like '%teaser%'
-and primary_document not like '%ants%'
-and primary_document not like '%pmk%'
-and primary_document not like '%prmk%'
-and primary_document not like '%ctsa%'
-and cast(size as INTEGER) > 1000000
+CREATE OR REPLACE VIEW public.cmbs_term_sheets_v
+ AS
+ SELECT i.name,
+    p.cik,
+    p.accession_number,
+    p.primary_document,
+    p.filing_date,
+    p.size,
+    (p.url::text || '/'::text) || p.primary_document::text AS url
+   FROM cmbs_prospectuses p
+     LEFT JOIN cmbs_issuing_entities i ON i.cik = p.cik
+  WHERE p.primary_document::text ~~ '%ts%'::text AND p.primary_document::text !~~ '%pre%'::text AND p.primary_document::text !~~ '%teaser%'::text AND p.primary_document::text !~~ '%ants%'::text AND p.primary_document::text !~~ '%pmk%'::text AND p.primary_document::text !~~ '%prmk%'::text AND p.primary_document::text !~~ '%ctsa%'::text AND p.size::integer > 1000000;
 
+
+CREATE TABLE cmbs_property_locations (
+    street_address TEXT,
+    geo_location GEOMETRY(POINT, 4326)
+);
 
 create table cmbs_offerings (
    cik INTEGER,
@@ -84,229 +82,228 @@ create table cmbs_offerings (
    business_state VARCHAR(32),
    business_zip VARCHAR(16),
    PRIMARY KEY (cik)
-)
+);
 
 DROP MATERIALIZED VIEW IF EXISTS cmbs_collateral_mv;
-create materialized view cmbs_collateral_mv as
-select
-    cik,
-    accession_number,
-    filing_date,
-    report_date,
-    primary_document,
-    form,
-    size,
-    url,
-    asset -> 'assetNumber' AS asset_number,
-    upper(trim(asset -> 'property' ->> 'propertyAddress')::TEXT) ||', '
-    || (asset -> 'property' ->> 'propertyState')::TEXT || ' '
-    || left(trim(asset -> 'property' ->> 'propertyZip')::TEXT, 5) AS location,
-    asset -> 'property' ->> 'propertyName' AS property_name,
-    asset -> 'property' ->> 'propertyAddress' AS property_address,
-    asset -> 'property' ->> 'propertyCity' AS property_city,
-    asset -> 'property' ->> 'propertyState' AS property_state,
-    asset -> 'property' ->> 'propertyZip' AS property_zip,
-    asset -> 'property' ->> 'propertyCounty' AS property_county,
-    (asset -> 'property' ->> 'yearBuiltNumber')::NUMERIC AS year_built,
-    (asset -> 'property' ->> 'yearLastRenovated')::NUMERIC  AS year_last_renovated,
-    (asset -> 'property' ->> 'unitsBedsRoomsNumber')::NUMERIC AS units_beds_rooms,
-    asset -> 'property' ->> 'propertyTypeCode' AS property_type_code,
-    asset -> 'property' ->> 'DefeasedStatusCode' AS defeased_status_code,
-    asset -> 'property' ->> 'propertyStatusCode' AS property_status_code,
-    asset -> 'property' ->> 'largestTenant' AS largest_tenant,
-    (asset -> 'property' ->> 'squareFeetLargestTenantNumber')::NUMERIC AS square_feet_largest_tenant,
-    TO_DATE(asset -> 'property' ->> 'leaseExpirationLargestTenantDate', 'MM-DD-YYYY') AS lease_expiration_largest_tenant_date,
-    asset -> 'property' ->> 'secondLargestTenant' AS second_largest_tenant,
-    (asset -> 'property' ->> 'squareFeetSecondLargestTenantNumber')::NUMERIC AS square_feet_second_largest_tenant,
-    TO_DATE(asset -> 'property' ->> 'leaseExpirationSecondLargestTenantDate', 'MM-DD-YYYY') AS lease_expiration_second_largest_tenant_date,
-    asset -> 'property' ->> 'thirdLargestTenant' AS third_largest_tenant,
-    (asset -> 'property' ->> 'squareFeetThirdLargestTenantNumber')::NUMERIC AS square_feet_third_largest_tenant,
-    TO_DATE(asset -> 'property' ->> 'leaseExpirationThirdLargestTenantDate', 'MM-DD-YYYY') AS lease_expiration_third_largest_tenant_date,
-    TO_DATE(asset -> 'property' ->> 'mostRecentAnnualLeaseRolloverReviewDate', 'MM-DD-YYYY') AS most_recent_annual_lease_rollover_review_date,
-    (asset -> 'property' ->> 'physicalOccupancySecuritizationPercentage')::NUMERIC AS physical_occupancy_securitization_percentage,
-    (asset -> 'property' ->> 'mostRecentPhysicalOccupancyPercentage')::NUMERIC AS most_recent_physical_occupancy_percentage,
-    (asset -> 'property' ->> 'netRentableSquareFeetNumber')::NUMERIC AS net_rentable_square_feet,
-    TO_DATE(asset -> 'property' ->> 'mostRecentValuationDate', 'MM-DD-YYYY') AS most_recent_valuation_date,
-    asset -> 'property' ->> 'mostRecentValuationAmount' AS most_recent_valuation_amount,
-    asset -> 'property' ->> 'mostRecentValuationSourceCode' AS most_recent_valuation_source_code,
-    TO_DATE(asset -> 'property' ->> 'mostRecentFinancialsStartDate', 'MM-DD-YYYY') AS most_recent_financials_start_date,
-    TO_DATE(asset -> 'property' ->> 'mostRecentFinancialsEndDate', 'MM-DD-YYYY') AS most_recent_financials_end_date,
-    (asset -> 'property' ->> 'mostRecentRevenueAmount')::NUMERIC AS most_recent_revenue_amount,
-    (asset -> 'property' ->> 'operatingExpensesAmount')::NUMERIC AS operating_expenses_amount,
-    (asset -> 'property' ->> 'mostRecentNetOperatingIncomeAmount')::NUMERIC AS most_recent_noi_amount,
-    (asset -> 'property' ->> 'mostRecentNetCashFlowAmount')::NUMERIC AS most_recent_net_cash_flow_amount,
-    asset -> 'property' ->> 'netOperatingIncomeNetCashFlowCode' AS noi_net_cash_flow_code,
-    (asset -> 'property' ->> 'mostRecentDebtServiceAmount')::NUMERIC AS most_recent_debt_service_amount,
-    (asset -> 'property' ->> 'mostRecentDebtServiceCoverageNetOperatingIncomePercentage')::NUMERIC AS most_recent_dsc_noi_percentage,
-    (asset -> 'property' ->> 'mostRecentDebtServiceCoverageNetCashFlowpercentage')::NUMERIC AS most_recent_dsc_net_cash_flow_percentage,
-    (asset -> 'property' ->> 'netRentableSquareFeetSecuritizationNumber')::NUMERIC AS net_rentable_square_feet_securitization,
-    TO_DATE(asset -> 'property' ->> 'valuationSecuritizationDate', 'MM-DD-YYYY') AS valuation_securitization_date,
-    (asset -> 'property' ->> 'valuationSecuritizationAmount')::NUMERIC AS valuation_securitization_amount,
-    asset -> 'property' ->> 'valuationSourceSecuritizationCode' AS valuation_source_securitization_code,
-    TO_DATE(asset -> 'property' ->> 'financialsSecuritizationDate', 'MM-DD-YYYY') AS financials_securitization_date,
-    (asset -> 'property' ->> 'revenueSecuritizationAmount')::NUMERIC AS revenue_securitization_amount,
-    (asset -> 'property' ->> 'operatingExpensesSecuritizationAmount')::NUMERIC AS operating_expenses_securitization_amount,
-    (asset -> 'property' ->> 'netOperatingIncomeSecuritizationAmount')::NUMERIC AS noi_securitization_amount,
-    asset -> 'property' ->> 'netOperatingIncomeNetCashFlowSecuritizationCode' AS noi_net_cash_flow_securitization_code,
-    (asset -> 'property' ->> 'netCashFlowFlowSecuritizationAmount')::NUMERIC AS net_cash_flow_flow_securitization_amount,
-    (asset -> 'property' ->> 'debtServiceCoverageNetOperatingIncomeSecuritizationPercentage')::NUMERIC AS dsc_noi_securitization_percentage,
-    (asset -> 'property' ->> 'debtServiceCoverageNetCashFlowSecuritizationPercentage')::NUMERIC AS dsc_net_cash_flow_securitization_percentage
-FROM
-  exh_102_exhibits,
-  LATERAL jsonb_array_elements(exhibit_data -> 'assetData' -> 'assets') AS asset
-  where  accession_number != '0001056404-17-001912'
-  and asset -> 'property' ->> 'propertyAddress' is not null
+CREATE MATERIALIZED VIEW IF NOT EXISTS public.cmbs_collateral_mv
+TABLESPACE pg_default
+AS
+ SELECT exh_102_exhibits.cik,
+    exh_102_exhibits.accession_number,
+    exh_102_exhibits.filing_date,
+    exh_102_exhibits.report_date,
+    exh_102_exhibits.primary_document,
+    exh_102_exhibits.form,
+    exh_102_exhibits.size,
+    exh_102_exhibits.url,
+    asset.value -> 'assetNumber'::text AS asset_number,
+    (((upper(TRIM(BOTH FROM (asset.value -> 'property'::text) ->> 'propertyAddress'::text)) || ', '::text) || ((asset.value -> 'property'::text) ->> 'propertyState'::text)) || ' '::text) || "left"(TRIM(BOTH FROM (asset.value -> 'property'::text) ->> 'propertyZip'::text), 5) AS location,
+    (asset.value -> 'property'::text) ->> 'propertyName'::text AS property_name,
+    (asset.value -> 'property'::text) ->> 'propertyAddress'::text AS property_address,
+    (asset.value -> 'property'::text) ->> 'propertyCity'::text AS property_city,
+    (asset.value -> 'property'::text) ->> 'propertyState'::text AS property_state,
+    (asset.value -> 'property'::text) ->> 'propertyZip'::text AS property_zip,
+    (asset.value -> 'property'::text) ->> 'propertyCounty'::text AS property_county,
+    ((asset.value -> 'property'::text) ->> 'yearBuiltNumber'::text)::numeric AS year_built,
+    ((asset.value -> 'property'::text) ->> 'yearLastRenovated'::text)::numeric AS year_last_renovated,
+    ((asset.value -> 'property'::text) ->> 'unitsBedsRoomsNumber'::text)::numeric AS units_beds_rooms,
+    (asset.value -> 'property'::text) ->> 'propertyTypeCode'::text AS property_type_code,
+    (asset.value -> 'property'::text) ->> 'DefeasedStatusCode'::text AS defeased_status_code,
+    (asset.value -> 'property'::text) ->> 'propertyStatusCode'::text AS property_status_code,
+    (asset.value -> 'property'::text) ->> 'largestTenant'::text AS largest_tenant,
+    ((asset.value -> 'property'::text) ->> 'squareFeetLargestTenantNumber'::text)::numeric AS square_feet_largest_tenant,
+    to_date((asset.value -> 'property'::text) ->> 'leaseExpirationLargestTenantDate'::text, 'MM-DD-YYYY'::text) AS lease_expiration_largest_tenant_date,
+    (asset.value -> 'property'::text) ->> 'secondLargestTenant'::text AS second_largest_tenant,
+    ((asset.value -> 'property'::text) ->> 'squareFeetSecondLargestTenantNumber'::text)::numeric AS square_feet_second_largest_tenant,
+    to_date((asset.value -> 'property'::text) ->> 'leaseExpirationSecondLargestTenantDate'::text, 'MM-DD-YYYY'::text) AS lease_expiration_second_largest_tenant_date,
+    (asset.value -> 'property'::text) ->> 'thirdLargestTenant'::text AS third_largest_tenant,
+    ((asset.value -> 'property'::text) ->> 'squareFeetThirdLargestTenantNumber'::text)::numeric AS square_feet_third_largest_tenant,
+    to_date((asset.value -> 'property'::text) ->> 'leaseExpirationThirdLargestTenantDate'::text, 'MM-DD-YYYY'::text) AS lease_expiration_third_largest_tenant_date,
+    (asset.value -> 'property'::text) ->> 'mostRecentAnnualLeaseRolloverReviewDate'::text AS most_recent_annual_lease_rollover_review_date,
+    ((asset.value -> 'property'::text) ->> 'physicalOccupancySecuritizationPercentage'::text)::numeric AS physical_occupancy_securitization_percentage,
+    ((asset.value -> 'property'::text) ->> 'mostRecentPhysicalOccupancyPercentage'::text)::numeric AS most_recent_physical_occupancy_percentage,
+    to_date((asset.value -> 'property'::text) ->> 'mostRecentValuationDate'::text, 'MM-DD-YYYY'::text) AS most_recent_valuation_date,
+    (asset.value -> 'property'::text) ->> 'mostRecentValuationAmount'::text AS most_recent_valuation_amount,
+    (asset.value -> 'property'::text) ->> 'mostRecentValuationSourceCode'::text AS most_recent_valuation_source_code,
+    to_date((asset.value -> 'property'::text) ->> 'mostRecentFinancialsStartDate'::text, 'MM-DD-YYYY'::text) AS most_recent_financials_start_date,
+    to_date((asset.value -> 'property'::text) ->> 'mostRecentFinancialsEndDate'::text, 'MM-DD-YYYY'::text) AS most_recent_financials_end_date,
+    ((asset.value -> 'property'::text) ->> 'mostRecentRevenueAmount'::text)::numeric AS most_recent_revenue_amount,
+    ((asset.value -> 'property'::text) ->> 'operatingExpensesAmount'::text)::numeric AS operating_expenses_amount,
+    ((asset.value -> 'property'::text) ->> 'mostRecentNetOperatingIncomeAmount'::text)::numeric AS most_recent_noi_amount,
+    ((asset.value -> 'property'::text) ->> 'mostRecentNetCashFlowAmount'::text)::numeric AS most_recent_net_cash_flow_amount,
+    (asset.value -> 'property'::text) ->> 'netOperatingIncomeNetCashFlowCode'::text AS noi_net_cash_flow_code,
+    ((asset.value -> 'property'::text) ->> 'mostRecentDebtServiceAmount'::text)::numeric AS most_recent_debt_service_amount,
+    ((asset.value -> 'property'::text) ->> 'mostRecentDebtServiceCoverageNetOperatingIncomePercentage'::text)::numeric AS most_recent_dsc_noi_percentage,
+    ((asset.value -> 'property'::text) ->> 'mostRecentDebtServiceCoverageNetCashFlowpercentage'::text)::numeric AS most_recent_dsc_net_cash_flow_percentage,
+    ((asset.value -> 'property'::text) ->> 'netRentableSquareFeetSecuritizationNumber'::text)::numeric AS net_rentable_square_feet_securitization,
+    ((asset.value -> 'property'::text) ->> 'netRentableSquareFeetNumber'::text)::numeric AS net_rentable_square_feet,
+    to_date((asset.value -> 'property'::text) ->> 'valuationSecuritizationDate'::text, 'MM-DD-YYYY'::text) AS valuation_securitization_date,
+    ((asset.value -> 'property'::text) ->> 'valuationSecuritizationAmount'::text)::numeric AS valuation_securitization_amount,
+    (asset.value -> 'property'::text) ->> 'valuationSourceSecuritizationCode'::text AS valuation_source_securitization_code,
+    to_date((asset.value -> 'property'::text) ->> 'financialsSecuritizationDate'::text, 'MM-DD-YYYY'::text) AS financials_securitization_date,
+    ((asset.value -> 'property'::text) ->> 'revenueSecuritizationAmount'::text)::numeric AS revenue_securitization_amount,
+    ((asset.value -> 'property'::text) ->> 'operatingExpensesSecuritizationAmount'::text)::numeric AS operating_expenses_securitization_amount,
+    ((asset.value -> 'property'::text) ->> 'netOperatingIncomeSecuritizationAmount'::text)::numeric AS noi_securitization_amount,
+    (asset.value -> 'property'::text) ->> 'netOperatingIncomeNetCashFlowSecuritizationCode'::text AS noi_net_cash_flow_securitization_code,
+    ((asset.value -> 'property'::text) ->> 'netCashFlowFlowSecuritizationAmount'::text)::numeric AS net_cash_flow_flow_securitization_amount,
+    ((asset.value -> 'property'::text) ->> 'debtServiceCoverageNetOperatingIncomeSecuritizationPercentage'::text)::numeric AS dsc_noi_securitization_percentage,
+    ((asset.value -> 'property'::text) ->> 'debtServiceCoverageNetCashFlowSecuritizationPercentage'::text)::numeric AS dsc_net_cash_flow_securitization_percentage
+   FROM exh_102_exhibits,
+    LATERAL jsonb_array_elements((exh_102_exhibits.exhibit_data -> 'assetData'::text) -> 'assets'::text) asset(value)
+  WHERE exh_102_exhibits.accession_number::text <> '0001056404-17-001912'::text AND ((asset.value -> 'property'::text) ->> 'propertyAddress'::text) IS NOT NULL
+WITH DATA;
+
 
 
 drop view if exists cmbs_collateral_v;
-CREATE VIEW cmbs_collateral_v AS
-SELECT
-    cik,
-    accession_number,
-    filing_date,
-    report_date,
-    primary_document,
-    form,
-    size,
-    url,
-    asset_number,
-    location,
-    property_name,
-    property_address,
-    property_city,
-    property_state,
-    property_zip,
-    property_county,
-    year_built,
-    year_last_renovated,
-    units_beds_rooms,
-    property_type_code,
-    CASE
-        WHEN property_type_code = 'CH' THEN 'Cooperative Housing'
-        WHEN property_type_code = 'HC' THEN 'Health Care'
-        WHEN property_type_code = 'IN' THEN 'Industrial'
-        WHEN property_type_code = 'LO' THEN 'Lodging'
-        WHEN property_type_code = 'MF' THEN 'Multifamily'
-        WHEN property_type_code = 'MH' THEN 'Mobile Home Park'
-        WHEN property_type_code = 'MU' THEN 'Mixed Use'
-        WHEN property_type_code = 'OF' THEN 'Office'
-        WHEN property_type_code = 'RT' THEN 'Retail'
-        WHEN property_type_code = 'SE' THEN 'Securities'
-        WHEN property_type_code = 'SS' THEN 'Self Storage'
-        WHEN property_type_code = 'WH' THEN 'Warehouse'
-        WHEN property_type_code = 'ZZ' THEN 'Missing Information'
-        WHEN property_type_code = '98' THEN 'Other'
-        ELSE property_type_code
-    END AS property_type,
-    defeased_status_code,
-    CASE
-        WHEN defeased_status_code = 'F' THEN 'Full defeasance'
-        WHEN defeased_status_code = 'IP' THEN 'Portion of loan previously defeased'
-        WHEN defeased_status_code = 'N' THEN 'No defeasance occurred'
-        WHEN defeased_status_code = 'X' THEN 'Defeasance not allowed'
-        ELSE defeased_status_code
-    END AS defeased_status,
-    property_status_code,
-    CASE
-        WHEN property_status_code = '1' THEN 'In Foreclosure'
-        WHEN property_status_code = '2' THEN 'REO'
-        WHEN property_status_code = '3' THEN 'Defeased'
-        WHEN property_status_code = '4' THEN 'Partial Release'
-        WHEN property_status_code = '5' THEN 'Substituted'
-        WHEN property_status_code = '6' THEN 'Same as at Securitization'
-        ELSE property_status_code
-    END AS property_status,
-    largest_tenant,
-    square_feet_largest_tenant,
-    lease_expiration_largest_tenant_date,
-    second_largest_tenant,
-    square_feet_second_largest_tenant,
-    lease_expiration_second_largest_tenant_date,
-    third_largest_tenant,
-    square_feet_third_largest_tenant,
-    lease_expiration_third_largest_tenant_date,
-    most_recent_annual_lease_rollover_review_date,
-    physical_occupancy_securitization_percentage,
-    most_recent_physical_occupancy_percentage,
-    net_rentable_square_feet,
-    most_recent_valuation_date,
-    most_recent_valuation_amount,
-    most_recent_valuation_source_code,
-    CASE
-        WHEN most_recent_valuation_source_code = 'BPO' THEN 'Broker price opinion'
-        WHEN most_recent_valuation_source_code = 'MAI' THEN 'Certified MAI appraisal'
-        WHEN most_recent_valuation_source_code = 'MS' THEN 'Master servicer estimate'
-        WHEN most_recent_valuation_source_code = 'Non-MAI' THEN 'Non-certified MAI appraisal'
-        WHEN most_recent_valuation_source_code = '98' THEN 'Other'
-        WHEN most_recent_valuation_source_code = 'SS' THEN 'SS estimate'
-        ELSE most_recent_valuation_source_code
-    END AS most_recent_valuation_source,
-    most_recent_financials_start_date,
-    most_recent_financials_end_date,
-    round (most_recent_revenue_amount) as most_recent_revenue_amount,
-    CASE
-        WHEN (most_recent_financials_end_date - most_recent_financials_start_date) = 0 THEN NULL
-        ELSE round(most_recent_revenue_amount * 365 / (most_recent_financials_end_date - most_recent_financials_start_date))
-    END AS current_revenue,
-    round(operating_expenses_amount) as operating_expenses_amount,
-    CASE
-        WHEN (most_recent_financials_end_date - most_recent_financials_start_date) = 0 THEN NULL
-        ELSE round(operating_expenses_amount * 365 / (most_recent_financials_end_date - most_recent_financials_start_date))
-    END AS current_operating_expenses,
-    round(most_recent_noi_amount) as most_recent_noi_amount,
-    CASE
-        WHEN (most_recent_financials_end_date - most_recent_financials_start_date) = 0 THEN NULL
-        ELSE round(most_recent_noi_amount * 365 / (most_recent_financials_end_date - most_recent_financials_start_date))
-    END AS current_noi,
-    round(most_recent_net_cash_flow_amount) as most_recent_net_cash_flow_amount,
-    CASE
-        WHEN (most_recent_financials_end_date - most_recent_financials_start_date) = 0 THEN NULL
-        ELSE round(most_recent_net_cash_flow_amount * 365 / (most_recent_financials_end_date - most_recent_financials_start_date))
-    END AS current_net_cash_flow,
-    noi_net_cash_flow_code,
-    CASE
-        WHEN noi_net_cash_flow_code = 'CMSA' THEN 'Calculated using CMSA standards'
-        WHEN noi_net_cash_flow_code = 'CREFC' THEN 'Calculated using CREFC standards'
-        WHEN noi_net_cash_flow_code = 'PSA' THEN 'Calculated using a definition given in the pooling and servicing agreement'
-        WHEN noi_net_cash_flow_code = 'UW' THEN 'Calculated using underwriting method'
-        ELSE noi_net_cash_flow_code
-    END AS noi_net_cash_flow_method,
-    round(most_recent_debt_service_amount) as most_recent_debt_service_amount,
-    most_recent_dsc_noi_percentage,
-    most_recent_dsc_net_cash_flow_percentage,
-    net_rentable_square_feet_securitization,
-    valuation_securitization_date,
-    valuation_securitization_amount,
-    valuation_source_securitization_code,
-    CASE
-        WHEN valuation_source_securitization_code = 'BPO' THEN 'Broker price opinion'
-        WHEN valuation_source_securitization_code = 'MAI' THEN 'Certified MAI appraisal'
-        WHEN valuation_source_securitization_code = 'MS' THEN 'Master servicer estimate'
-        WHEN valuation_source_securitization_code = 'Non-MAI' THEN 'Non-certified MAI appraisal'
-        WHEN valuation_source_securitization_code = '98' THEN 'Other'
-        WHEN valuation_source_securitization_code = 'SS' THEN 'SS estimate'
-        ELSE valuation_source_securitization_code
-    END AS valuation_source_securitization,
-    financials_securitization_date,
-    round(revenue_securitization_amount) as revenue_securitization_amount,
-    round(revenue_securitization_amount / 12) as monthly_revenue_securitization,
-    round(operating_expenses_securitization_amount) as operating_expenses_securitization_amount,
-    round(operating_expenses_securitization_amount / 12) as monthly_operating_expenses_securitization,
-    round(noi_securitization_amount) as noi_securitization_amount,
-    round(noi_securitization_amount / 12) as monthly_noi_securitization,
-    noi_net_cash_flow_securitization_code,
-    CASE
-        WHEN noi_net_cash_flow_securitization_code = 'CMSA' THEN 'Calculated using CMSA standards'
-        WHEN noi_net_cash_flow_securitization_code = 'CREFC' THEN 'Calculated using CREFC standards'
-        WHEN noi_net_cash_flow_securitization_code = 'PSA' THEN 'Calculated using a definition given in the pooling and servicing agreement'
-        WHEN noi_net_cash_flow_securitization_code = 'UW' THEN 'Calculated using underwriting method'
-        ELSE noi_net_cash_flow_securitization_code
-    END AS noi_net_cash_flow_securitization_method,
-    round(net_cash_flow_flow_securitization_amount) as net_cash_flow_flow_securitization_amount,
-    round(net_cash_flow_flow_securitization_amount / 12) as monthly_net_cash_flow_securitization,
-    dsc_noi_securitization_percentage,
-    dsc_net_cash_flow_securitization_percentage
-FROM cmbs_collateral_mv;
+CREATE OR REPLACE VIEW public.cmbs_collateral_v
+ AS
+ SELECT cmbs_collateral_mv.cik,
+    cmbs_collateral_mv.accession_number,
+    cmbs_collateral_mv.filing_date,
+    cmbs_collateral_mv.report_date,
+    cmbs_collateral_mv.primary_document,
+    cmbs_collateral_mv.form,
+    cmbs_collateral_mv.size,
+    cmbs_collateral_mv.url,
+    cmbs_collateral_mv.asset_number,
+    cmbs_collateral_mv.location,
+    cmbs_collateral_mv.property_name,
+    cmbs_collateral_mv.property_address,
+    cmbs_collateral_mv.property_city,
+    cmbs_collateral_mv.property_state,
+    cmbs_collateral_mv.property_zip,
+    cmbs_collateral_mv.property_county,
+    cmbs_collateral_mv.year_built,
+    cmbs_collateral_mv.year_last_renovated,
+    cmbs_collateral_mv.units_beds_rooms,
+    cmbs_collateral_mv.property_type_code,
+        CASE
+            WHEN cmbs_collateral_mv.property_type_code = 'CH'::text THEN 'Cooperative Housing'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'HC'::text THEN 'Health Care'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'IN'::text THEN 'Industrial'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'LO'::text THEN 'Lodging'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'MF'::text THEN 'Multifamily'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'MH'::text THEN 'Mobile Home Park'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'MU'::text THEN 'Mixed Use'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'OF'::text THEN 'Office'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'RT'::text THEN 'Retail'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'SE'::text THEN 'Securities'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'SS'::text THEN 'Self Storage'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'WH'::text THEN 'Warehouse'::text
+            WHEN cmbs_collateral_mv.property_type_code = 'ZZ'::text THEN 'Missing Information'::text
+            WHEN cmbs_collateral_mv.property_type_code = '98'::text THEN 'Other'::text
+            ELSE cmbs_collateral_mv.property_type_code
+        END AS property_type,
+    cmbs_collateral_mv.defeased_status_code,
+        CASE
+            WHEN cmbs_collateral_mv.defeased_status_code = 'F'::text THEN 'Full defeasance'::text
+            WHEN cmbs_collateral_mv.defeased_status_code = 'IP'::text THEN 'Portion of loan previously defeased'::text
+            WHEN cmbs_collateral_mv.defeased_status_code = 'N'::text THEN 'No defeasance occurred'::text
+            WHEN cmbs_collateral_mv.defeased_status_code = 'X'::text THEN 'Defeasance not allowed'::text
+            ELSE cmbs_collateral_mv.defeased_status_code
+        END AS defeased_status,
+    cmbs_collateral_mv.property_status_code,
+        CASE
+            WHEN cmbs_collateral_mv.property_status_code = '1'::text THEN 'In Foreclosure'::text
+            WHEN cmbs_collateral_mv.property_status_code = '2'::text THEN 'REO'::text
+            WHEN cmbs_collateral_mv.property_status_code = '3'::text THEN 'Defeased'::text
+            WHEN cmbs_collateral_mv.property_status_code = '4'::text THEN 'Partial Release'::text
+            WHEN cmbs_collateral_mv.property_status_code = '5'::text THEN 'Substituted'::text
+            WHEN cmbs_collateral_mv.property_status_code = '6'::text THEN 'Same as at Securitization'::text
+            ELSE cmbs_collateral_mv.property_status_code
+        END AS property_status,
+    cmbs_collateral_mv.largest_tenant,
+    cmbs_collateral_mv.square_feet_largest_tenant,
+    cmbs_collateral_mv.lease_expiration_largest_tenant_date,
+    cmbs_collateral_mv.second_largest_tenant,
+    cmbs_collateral_mv.square_feet_second_largest_tenant,
+    cmbs_collateral_mv.lease_expiration_second_largest_tenant_date,
+    cmbs_collateral_mv.third_largest_tenant,
+    cmbs_collateral_mv.square_feet_third_largest_tenant,
+    cmbs_collateral_mv.lease_expiration_third_largest_tenant_date,
+    cmbs_collateral_mv.most_recent_annual_lease_rollover_review_date,
+    cmbs_collateral_mv.physical_occupancy_securitization_percentage,
+    cmbs_collateral_mv.most_recent_physical_occupancy_percentage,
+    cmbs_collateral_mv.net_rentable_square_feet,
+    cmbs_collateral_mv.most_recent_valuation_date,
+    cmbs_collateral_mv.most_recent_valuation_amount,
+    cmbs_collateral_mv.most_recent_valuation_source_code,
+        CASE
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = 'BPO'::text THEN 'Broker price opinion'::text
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = 'MAI'::text THEN 'Certified MAI appraisal'::text
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = 'MS'::text THEN 'Master servicer estimate'::text
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = 'Non-MAI'::text THEN 'Non-certified MAI appraisal'::text
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = '98'::text THEN 'Other'::text
+            WHEN cmbs_collateral_mv.most_recent_valuation_source_code = 'SS'::text THEN 'SS estimate'::text
+            ELSE cmbs_collateral_mv.most_recent_valuation_source_code
+        END AS most_recent_valuation_source,
+    cmbs_collateral_mv.most_recent_financials_start_date,
+    cmbs_collateral_mv.most_recent_financials_end_date,
+    round(cmbs_collateral_mv.most_recent_revenue_amount) AS most_recent_revenue_amount,
+        CASE
+            WHEN (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date) = 0 THEN NULL::numeric
+            ELSE round(cmbs_collateral_mv.most_recent_revenue_amount * 365::numeric / (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date)::numeric)
+        END AS current_revenue,
+    round(cmbs_collateral_mv.operating_expenses_amount) AS operating_expenses_amount,
+        CASE
+            WHEN (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date) = 0 THEN NULL::numeric
+            ELSE round(cmbs_collateral_mv.operating_expenses_amount * 365::numeric / (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date)::numeric)
+        END AS current_operating_expenses,
+    round(cmbs_collateral_mv.most_recent_noi_amount) AS most_recent_noi_amount,
+        CASE
+            WHEN (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date) = 0 THEN NULL::numeric
+            ELSE round(cmbs_collateral_mv.most_recent_noi_amount * 365::numeric / (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date)::numeric)
+        END AS current_noi,
+    round(cmbs_collateral_mv.most_recent_net_cash_flow_amount) AS most_recent_net_cash_flow_amount,
+        CASE
+            WHEN (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date) = 0 THEN NULL::numeric
+            ELSE round(cmbs_collateral_mv.most_recent_net_cash_flow_amount * 365::numeric / (cmbs_collateral_mv.most_recent_financials_end_date - cmbs_collateral_mv.most_recent_financials_start_date)::numeric)
+        END AS current_net_cash_flow,
+    cmbs_collateral_mv.noi_net_cash_flow_code,
+        CASE
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_code = 'CMSA'::text THEN 'Calculated using CMSA standards'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_code = 'CREFC'::text THEN 'Calculated using CREFC standards'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_code = 'PSA'::text THEN 'Calculated using a definition given in the pooling and servicing agreement'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_code = 'UW'::text THEN 'Calculated using underwriting method'::text
+            ELSE cmbs_collateral_mv.noi_net_cash_flow_code
+        END AS noi_net_cash_flow_method,
+    round(cmbs_collateral_mv.most_recent_debt_service_amount) AS most_recent_debt_service_amount,
+    cmbs_collateral_mv.most_recent_dsc_noi_percentage,
+    cmbs_collateral_mv.most_recent_dsc_net_cash_flow_percentage,
+    cmbs_collateral_mv.net_rentable_square_feet_securitization,
+    cmbs_collateral_mv.valuation_securitization_date,
+    cmbs_collateral_mv.valuation_securitization_amount,
+    cmbs_collateral_mv.valuation_source_securitization_code,
+        CASE
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = 'BPO'::text THEN 'Broker price opinion'::text
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = 'MAI'::text THEN 'Certified MAI appraisal'::text
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = 'MS'::text THEN 'Master servicer estimate'::text
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = 'Non-MAI'::text THEN 'Non-certified MAI appraisal'::text
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = '98'::text THEN 'Other'::text
+            WHEN cmbs_collateral_mv.valuation_source_securitization_code = 'SS'::text THEN 'SS estimate'::text
+            ELSE cmbs_collateral_mv.valuation_source_securitization_code
+        END AS valuation_source_securitization,
+    cmbs_collateral_mv.financials_securitization_date,
+    round(cmbs_collateral_mv.revenue_securitization_amount) AS revenue_securitization_amount,
+    round(cmbs_collateral_mv.revenue_securitization_amount / 12::numeric) AS monthly_revenue_securitization,
+    round(cmbs_collateral_mv.operating_expenses_securitization_amount) AS operating_expenses_securitization_amount,
+    round(cmbs_collateral_mv.operating_expenses_securitization_amount / 12::numeric) AS monthly_operating_expenses_securitization,
+    round(cmbs_collateral_mv.noi_securitization_amount) AS noi_securitization_amount,
+    round(cmbs_collateral_mv.noi_securitization_amount / 12::numeric) AS monthly_noi_securitization,
+    cmbs_collateral_mv.noi_net_cash_flow_securitization_code,
+        CASE
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_securitization_code = 'CMSA'::text THEN 'Calculated using CMSA standards'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_securitization_code = 'CREFC'::text THEN 'Calculated using CREFC standards'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_securitization_code = 'PSA'::text THEN 'Calculated using a definition given in the pooling and servicing agreement'::text
+            WHEN cmbs_collateral_mv.noi_net_cash_flow_securitization_code = 'UW'::text THEN 'Calculated using underwriting method'::text
+            ELSE cmbs_collateral_mv.noi_net_cash_flow_securitization_code
+        END AS noi_net_cash_flow_securitization_method,
+    round(cmbs_collateral_mv.net_cash_flow_flow_securitization_amount) AS net_cash_flow_flow_securitization_amount,
+    round(cmbs_collateral_mv.net_cash_flow_flow_securitization_amount / 12::numeric) AS monthly_net_cash_flow_securitization,
+    cmbs_collateral_mv.dsc_noi_securitization_percentage,
+    cmbs_collateral_mv.dsc_net_cash_flow_securitization_percentage
+   FROM cmbs_collateral_mv;
 
 create view cmbs_latest_collateral_v as
 select c.*
