@@ -71,12 +71,17 @@ app.post('/cmbs/:form', async (req, res) => {
 
   const form = req.params.form;
   // validate form is a valid form type
-  if (!['ABS-EE', 'FWP'].includes(form)) {
+  if (!['ABS-EE', 'FWP', 'GEOCODE'].includes(form)) {
     res.status(400).send(`Invalid form type: ${form}`);
+  }
+
+  if (form === 'GEOCODE') {
+    const response = await database.geocodeAddresses();
+    res.json(response);
+    return;
   }
   const files = fileUtils.grepFiles(config.absDirectory, form);
   const eList = objectUtils.filterAutoIssuers(files, form);
-
   const response = await http.insertAllExhibitData(eList, form);
   res.json(response);
 });

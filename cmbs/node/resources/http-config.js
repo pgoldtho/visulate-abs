@@ -16,6 +16,7 @@
 
 const resourceDirectory = process.env.RESOURCE_DIRECTORY||process.env.PWD + '/resources'
 const absDirectory = process.env.ABS_DIRECTORY||process.env.PWD + '/abs'
+const geocodeURL = process.env.GEOCODE_URL ||'http://localhost:2322/api/'
 
 /**
  * Return environment variable or default value
@@ -24,6 +25,7 @@ module.exports = {
     port: process.env.HTTP_PORT || 3000 ,
     corsOriginWhitelist: process.env.CORS_ORIGIN_WHITELIST ||'',
     resourceDirectory: resourceDirectory,
+    geocodeURL: geocodeURL,
     absDirectory: absDirectory,
     httpHeaders: {'User-Agent': 'Visulate peter@visulate.com'}, // SEC requires a custom user agent
     postgresConfig: {

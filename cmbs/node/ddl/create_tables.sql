@@ -1,3 +1,25 @@
+CREATE TABLE public.zipcode_centroids (
+    objectid INTEGER NOT NULL, -- From the source data
+    std_zip5 VARCHAR(5) NOT NULL, -- The 5-digit ZIP code (important for joins)
+    usps_zip_pref_city VARCHAR(100), -- Preferred city name
+    usps_zip_pref_state VARCHAR(2), -- Preferred state (e.g., "PR")
+    latitude NUMERIC, -- Decimal latitude
+    longitude NUMERIC, -- Decimal longitude
+    lat NUMERIC, -- Duplicate of latitude (consider removing)
+    lon NUMERIC, -- Duplicate of longitude (consider removing)
+    x NUMERIC, -- Projected X coordinate (if you need it)
+    y NUMERIC, -- Projected Y coordinate (if you need it)
+    geo_location GEOGRAPHY(Point, 4326), -- PostGIS geography point (for spatial queries)
+    CONSTRAINT zipcode_centroids_pkey PRIMARY KEY (std_zip5) -- Primary key on ZIP
+);
+
+-- Create a spatial index for fast nearest neighbor queries
+CREATE INDEX zipcode_centroids_geo_location_idx ON public.zipcode_centroids USING GIST (geo_location);
+
+-- Optional: Index on city and state (if you frequently filter by these)
+CREATE INDEX zipcode_centroids_city_state_idx ON public.zipcode_centroids (usps_zip_pref_city, usps_zip_pref_state);
+
+
 CREATE TABLE exh_102_exhibits (
     cik INTEGER,
     accession_number VARCHAR(255),
