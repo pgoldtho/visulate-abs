@@ -15,10 +15,64 @@
  */
 
 const pgp = require('pg-promise')();
-const { as } = require('pg-promise');
 const config = require('../resources/http-config');
 const db = pgp(config.postgresConfig);
 const { decodeAssets, lookupTable } = require('../resources/decode-lookup');
+const fileUtils = require('../utils/file-utils.js');
+
+
+async function geocodeZipcodes(zipcode_centroids) {
+  try {
+    await db.none('TRUNCATE TABLE public.zipcode_centroids');
+    const results = await fileUtils.readCsv(zipcode_centroids);
+
+    for (const row of results) {
+      const std_zip5 = row.STD_ZIP5;
+      const usps_zip_pref_city = row.USPS_ZIP_PREF_CITY;
+      const usps_zip_pref_state = row.USPS_ZIP_PREF_STATE;
+      const latitude = parseFloat(row.LATITUDE) || null;
+      const longitude = parseFloat(row.LONGITUDE) || null;
+      const x = parseFloat(row.x) || null;
+      const y = parseFloat(row.y) || null;
+
+      const geoLocation =
+        latitude && longitude
+          ? `SRID=4326;POINT(${longitude} ${latitude})`
+          : null;
+
+      await db.none(
+        `
+        INSERT INTO public.zipcode_centroids (
+          std_zip5,
+          usps_zip_pref_city,
+          usps_zip_pref_state,
+          latitude,
+          longitude,
+          x,
+          y,
+          geo_location
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_GeomFromText($8), 4326))
+        `,
+        [
+          std_zip5,
+          usps_zip_pref_city,
+          usps_zip_pref_state,
+          latitude,
+          longitude,
+          x,
+          y,
+          geoLocation,
+        ]
+      );
+    }
+
+    return "Zipcode centroids populated successfully!";
+  } catch (error) {
+    console.error('Error populating zipcode_centroids:', error);
+    throw error;
+  }
+}
+module.exports.geocodeZipcodes = geocodeZipcodes;
 
 /**
  * existingEntities
