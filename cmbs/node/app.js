@@ -68,22 +68,26 @@ app.use('/static', express.static('resources/static'));
  */
 
 app.post('/cmbs/:form', async (req, res) => {
-
   const form = req.params.form;
-  // validate form is a valid form type
-  if (!['ABS-EE', 'FWP', 'GEOCODE'].includes(form)) {
-    res.status(400).send(`Invalid form type: ${form}`);
+
+  if (!['ABS-EE', 'FWP', 'ZIPCODES'].includes(form)) {
+    return res.status(400).send(`Invalid form type: ${form}`);
   }
 
-  if (form === 'GEOCODE') {
-    const response = await database.geocodeAddresses();
-    res.json(response);
-    return;
+  try {
+    if (form === 'ZIPCODES') {
+      await database.geocodeZipcodes(`${config.resourceDirectory}/zip-centroids.csv`);
+      return res.status(200).send('Zipcode data loaded successfully.'); // Successful response
+    }
+
+    const files = fileUtils.grepFiles(config.absDirectory, form);
+    const eList = objectUtils.filterAutoIssuers(files, form);
+    const response = await http.insertAllExhibitData(eList, form);
+    return res.json(response);
+  } catch (error) {
+    console.error('Error in /cmbs/:form route:', error);
+    return res.status(500).send(`Error processing request: ${error.message}`); // Send error response
   }
-  const files = fileUtils.grepFiles(config.absDirectory, form);
-  const eList = objectUtils.filterAutoIssuers(files, form);
-  const response = await http.insertAllExhibitData(eList, form);
-  res.json(response);
 });
 
 /**

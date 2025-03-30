@@ -1,12 +1,9 @@
 CREATE TABLE public.zipcode_centroids (
-    objectid INTEGER NOT NULL, -- From the source data
     std_zip5 VARCHAR(5) NOT NULL, -- The 5-digit ZIP code (important for joins)
     usps_zip_pref_city VARCHAR(100), -- Preferred city name
     usps_zip_pref_state VARCHAR(2), -- Preferred state (e.g., "PR")
     latitude NUMERIC, -- Decimal latitude
     longitude NUMERIC, -- Decimal longitude
-    lat NUMERIC, -- Duplicate of latitude (consider removing)
-    lon NUMERIC, -- Duplicate of longitude (consider removing)
     x NUMERIC, -- Projected X coordinate (if you need it)
     y NUMERIC, -- Projected Y coordinate (if you need it)
     geo_location GEOGRAPHY(Point, 4326), -- PostGIS geography point (for spatial queries)
@@ -88,11 +85,6 @@ CREATE OR REPLACE VIEW public.cmbs_term_sheets_v
      LEFT JOIN cmbs_issuing_entities i ON i.cik = p.cik
   WHERE p.primary_document::text ~~ '%ts%'::text AND p.primary_document::text !~~ '%pre%'::text AND p.primary_document::text !~~ '%teaser%'::text AND p.primary_document::text !~~ '%ants%'::text AND p.primary_document::text !~~ '%pmk%'::text AND p.primary_document::text !~~ '%prmk%'::text AND p.primary_document::text !~~ '%ctsa%'::text AND p.size::integer > 1000000;
 
-
-CREATE TABLE cmbs_property_locations (
-    street_address TEXT,
-    geo_location GEOMETRY(POINT, 4326)
-);
 
 create table cmbs_offerings (
    cik INTEGER,

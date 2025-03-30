@@ -14,12 +14,65 @@
  * limitations under the License.
  */
 
-const axios = require('axios');
 const pgp = require('pg-promise')();
-const { as } = require('pg-promise');
 const config = require('../resources/http-config');
 const db = pgp(config.postgresConfig);
 const { decodeAssets, lookupTable } = require('../resources/decode-lookup');
+const fileUtils = require('../utils/file-utils.js');
+
+
+async function geocodeZipcodes(zipcode_centroids) {
+  try {
+    await db.none('TRUNCATE TABLE public.zipcode_centroids');
+    const results = await fileUtils.readCsv(zipcode_centroids);
+
+    for (const row of results) {
+      const std_zip5 = row.STD_ZIP5;
+      const usps_zip_pref_city = row.USPS_ZIP_PREF_CITY;
+      const usps_zip_pref_state = row.USPS_ZIP_PREF_STATE;
+      const latitude = parseFloat(row.LATITUDE) || null;
+      const longitude = parseFloat(row.LONGITUDE) || null;
+      const x = parseFloat(row.x) || null;
+      const y = parseFloat(row.y) || null;
+
+      const geoLocation =
+        latitude && longitude
+          ? `SRID=4326;POINT(${longitude} ${latitude})`
+          : null;
+
+      await db.none(
+        `
+        INSERT INTO public.zipcode_centroids (
+          std_zip5,
+          usps_zip_pref_city,
+          usps_zip_pref_state,
+          latitude,
+          longitude,
+          x,
+          y,
+          geo_location
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, ST_SetSRID(ST_GeomFromText($8), 4326))
+        `,
+        [
+          std_zip5,
+          usps_zip_pref_city,
+          usps_zip_pref_state,
+          latitude,
+          longitude,
+          x,
+          y,
+          geoLocation,
+        ]
+      );
+    }
+
+    return "Zipcode centroids populated successfully!";
+  } catch (error) {
+    console.error('Error populating zipcode_centroids:', error);
+    throw error;
+  }
+}
+module.exports.geocodeZipcodes = geocodeZipcodes;
 
 /**
  * existingEntities
@@ -159,116 +212,6 @@ async function saveProspectus(filing, prospectus) {
 }
 
 module.exports.saveProspectus = saveProspectus;
-
-/**
- * geocodeAddresses
- *
- * Geocodes street addresses and stores them in the cmbs_property_locations table.
- */
-
-function parseAndNormalizeAddress(address) {
-  // 1. Split by common separators (including state/ZIP)
-  const separators = /AND |& |; |, /i; // Case-insensitive "AND"
-  let addresses = address.split(separators);
-
-  // Clean up individual addresses
-  addresses = addresses.map(addr => addr.trim());
-
-  // 2. Identify and extract state and ZIP (assuming they are at the end)
-  let stateZip = '';
-  const zipCodeRegex = /([A-Z]{2} \d{5}(?:-\d{4})?)$/; // Matches "XX 99999" or "XX 99999-9999"
-
-  addresses = addresses.map(addr => {
-      const zipMatch = addr.match(zipCodeRegex);
-      if (zipMatch) {
-          stateZip = ' ' + zipMatch[1]; // Add a space before
-          return addr.replace(zipCodeRegex, '').trim(); // Remove state/ZIP and trim
-      }
-      return addr;
-  });
-
-  // 3. Expand ranges (basic) - handles simple cases like "100-102 Main St"
-  addresses = addresses.map(addr => {
-      const rangeMatch = addr.match(/(\d+)-(\d+) (.*)/);
-      if (rangeMatch) {
-          return rangeMatch[1] + " " + rangeMatch[3]; // Return the first number in the range
-      }
-      return addr;
-  });
-
-  // 4. Select a single address and reconstruct
-  if (addresses.length > 0) {
-      let bestAddress = addresses.find(addr => /\d+ [A-Za-z]+/.test(addr));
-      if (!bestAddress) {
-          bestAddress = addresses[0];
-      }
-      return bestAddress + stateZip; // Reconstruct the address
-  } else {
-      return address; // Return the original if no splitting occurred
-  }
-}
-
-async function geocodeAddresses() {
-  try {
-    // Query for distinct locations that are not yet geocoded
-    const query = `
-      SELECT DISTINCT location
-      FROM cmbs_collateral_mv c
-      JOIN latest_exh_102_exhibits l
-      ON l.cik = c.cik
-      AND l.accession_number = c.accession_number
-      WHERE NOT EXISTS (
-        SELECT 1
-        FROM cmbs_property_locations
-        WHERE street_address = c.location
-      );
-    `;
-
-    const result = await db.any(query);
-    const locations = result.map(row => row.location);
-
-    console.log(`Found ${locations.length} locations to geocode.`);
-
-    // Geocode each location and store in the database
-    for (const location of locations) {
-      try {
-        // Parse and normalize the address
-        const parsedAddress = parseAndNormalizeAddress(location);
-        console.log(`Geocoding address: ${parsedAddress}`);
-        const geocodeResponse = await axios.get(`${config.geocodeURL}?q=${encodeURIComponent(parsedAddress)}`);
-        const geojson = geocodeResponse.data;
-
-        if (geojson.features && geojson.features.length > 0) {
-          const coordinates = geojson.features[0].geometry.coordinates;
-          const longitude = coordinates[0];
-          const latitude = coordinates[1];
-
-          // Construct the PostGIS point
-          const point = `SRID=4326;POINT(${longitude} ${latitude})`;
-
-          // Insert the geocoded location into the database
-          const insertQuery = `
-            INSERT INTO cmbs_property_locations (street_address, geo_location)
-            VALUES ($1, ST_GeomFromText($2, 4326));
-          `;
-
-          await db.none(insertQuery, [location, point]);
-          console.log(`Geocoded and stored: ${location}`);
-        } else {
-          console.log(`No geocoding results found for: ${location}`);
-        }
-      } catch (error) {
-        console.error(`Error geocoding ${location}: ${error.message}`);
-      }
-    }
-
-    console.log('Geocoding process complete.');
-  } catch (error) {
-    console.error('Error during geocoding process:', error);
-  }
-}
-
-module.exports.geocodeAddresses = geocodeAddresses;
 
 /**
  * getExhibit
