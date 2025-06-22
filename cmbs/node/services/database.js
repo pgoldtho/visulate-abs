@@ -339,6 +339,10 @@ async function getLatestAssets(cik) {
 async function getLatestCollateral(cik) {
   const query = `
     SELECT
+      z.usps_zip_pref_city as city,
+      z.usps_zip_pref_state as state,
+	    z.latitude,
+	    z.longitude,
       c.url||'/'||c.primary_document as url,
       c.filing_date,
       c.asset_number,
@@ -390,7 +394,11 @@ async function getLatestCollateral(cik) {
       c.most_recent_dsc_noi_percentage,
       c.most_recent_dsc_net_cash_flow_percentage
   FROM public.latest_exh_102_exhibits l
-  JOIN cmbs_collateral_v c ON c.cik = l.cik AND c.accession_number = l.accession_number
+  JOIN cmbs_collateral_v c
+    ON c.cik = l.cik
+    AND c.accession_number = l.accession_number
+  LEFT JOIN public.zipcode_centroids z
+    ON lpad(c.property_zip, 5, '0') = z.std_zip5
   WHERE l.cik = $1
   `;
   try {

@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@materializecss/materialize@2.2.1/dist/js/materialize.min.js"></script>
     <link rel="icon" href="/static/visulate-tiny.png" type="image/png">
-    <script type="module" src="/static/main.js"></script>
+
   </head>
   <body>
 
@@ -37,6 +37,13 @@
       </div>
 
       <div class="row">
+        <div class="col s12">
+          <ul class="tabs">
+            <li class="tab col s3"><a class="active"href="#properties">Properties</a></li>
+            <li class="tab col s3"><a href="#offering">Offering Details</a></li>
+          </ul>
+        </div>
+        <div class="col s12" id="properties"></div>
         <div class="col s12" id="offering"></div>  {{!-- Full width on small screens --}}
       </div>
 
@@ -68,13 +75,10 @@
       </div>
 
     </div>  {{!-- container --}}
-
-    <script type="module">
-      import { addEventListeners } from '/static/main.js';
-      addEventListeners();
-    </script>
     <script>
-      window.trusts = {{{json this}}};
+      window.MAPS_API_KEY = "{{MAPS_API_KEY}}";
+      window.trusts = {{{json trusts}}};
     </script>
+    <script type="module" src="/static/main.js"></script>
   </body>
 </html>
