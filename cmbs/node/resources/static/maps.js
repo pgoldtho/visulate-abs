@@ -250,7 +250,7 @@ export async function showProperties(cik, title) {
                     <p><strong>City:</strong> ${property.city}</p>
                     <p><strong>Property Type:</strong> ${property.property_type || 'N/A'}</p>
                     <p><strong>Year Built:</strong> ${property.year_built || 'N/A'} </p>
-                    <p><strong>Last Renovated:</strong> ${property.year_built || 'N/A'}</p>
+                    <p><strong>Last Renovated:</strong> ${property.year_last_renovated || 'N/A'}</p>
                     <p><strong>Net Rentable Sq Ft:</strong> ${formatNumber(property.net_rentable_square_feet)}</p>
                     <p><strong>Largest Tenant:</strong> ${property.largest_tenant || 'N/A'}
                       (${formatNumber(property.square_feet_largest_tenant)} Sq Ft),
