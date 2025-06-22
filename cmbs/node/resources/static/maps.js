@@ -263,8 +263,8 @@ export async function showProperties(cik, title) {
                       lease expires ${extractDate(property.lease_expiration_third_largest_tenant_date)}</p>
                     <p><strong>Defeased Status:</strong> ${property.defeased_status || 'N/A'}</p>
                     <p><strong>Property Status:</strong> ${property.property_status || 'N/A'}</p>
-                    <p><strong>Current Occupancy (%):</strong> ${property.most_recent_physical_occupancy_percentage * 100 || 'N/A'}</p>
-                    <p><strong>Occupancy at Securitization (%):</strong> ${property.physical_occupancy_securitization_percentage * 100 || 'N/A'}</p>
+                    <p><strong>Current Occupancy (%):</strong> ${(property.most_recent_physical_occupancy_percentage ?? 'N/A') * 100}</p>
+                    <p><strong>Occupancy at Securitization (%):</strong> ${(property.physical_occupancy_securitization_percentage ?? 'N/A') * 100}</p>
                     <p><strong>Valuation Amount:</strong> ${formatCurrency(property.valuation_securitization_amount)}</p>
                     <p><strong>Revenue:</strong> ${formatCurrency(property.revenue_securitization_amount)}</p>
                     <p><strong>Operating Expenses:</strong> ${formatCurrency(property.operating_expenses_securitization_amount)}</p>
