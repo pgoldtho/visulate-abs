@@ -115,14 +115,19 @@ app.get('/cmbs/:form', (req, res) => {
 });
 
 /**
- * GET /cmbs
+ * GET /
  *
  * Get an array of term sheets
  *
  */
-app.get('/cmbs', async (req, res) => {
+app.get('/', async (req, res) => {
   const termSheets = await database.getTermSheets();
-    res.send(fileUtils.htmlFromObject(termSheets, `${config.resourceDirectory}/cmbs-offerings.hbs`));
+  const templateData = {
+    MAPS_API_KEY: process.env.MAPS_API_KEY,
+    trusts: termSheets
+  };
+  res.send(fileUtils.htmlFromObject(templateData, `${config.resourceDirectory}/cmbs-offerings.hbs`));
+  // res.send(fileUtils.htmlFromObject(termSheets, `${config.resourceDirectory}/cmbs-offerings.hbs`));
 });
 
 /**
@@ -139,6 +144,13 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
   const response = await database.getExhibit(cik, accessionNumber);
   res.json(response);
 });
+
+app.get('/properties/:cik', async (req, res) => {
+  const cik = req.params.cik;
+  const properties = await database.getLatestCollateral(cik);
+  res.json(properties);
+});
+
 
 /**
  * GET /fwp/:cik/:accession_number

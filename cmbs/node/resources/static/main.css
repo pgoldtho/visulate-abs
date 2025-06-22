@@ -143,3 +143,16 @@
   border-bottom: 1px solid #ccc !important;
   box-shadow: 0 1px 0 0 #ccc !important;
 }
+
+#map {
+  height: 400px;
+  width: 100%;
+}
+
+/* Location Map and Panorama Styles */
+#location-map,
+#location-pano {
+  float: left;
+  height: 400px;
+  width: 50%;
+}
