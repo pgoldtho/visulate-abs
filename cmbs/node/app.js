@@ -127,7 +127,6 @@ app.get('/', async (req, res) => {
     trusts: termSheets
   };
   res.send(fileUtils.htmlFromObject(templateData, `${config.resourceDirectory}/cmbs-offerings.hbs`));
-  // res.send(fileUtils.htmlFromObject(termSheets, `${config.resourceDirectory}/cmbs-offerings.hbs`));
 });
 
 /**
