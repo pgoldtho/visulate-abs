@@ -83,6 +83,12 @@ app.post('/cmbs/:form', async (req, res) => {
     const files = fileUtils.grepFiles(config.absDirectory, form);
     const eList = objectUtils.filterAutoIssuers(files, form);
     const response = await http.insertAllExhibitData(eList, form);
+
+    // refresh materialized views
+    if (form === 'ABS-EE') {
+      await database.refreshMaterializedViews();
+    }
+
     return res.json(response);
   } catch (error) {
     console.error('Error in /cmbs/:form route:', error);
@@ -168,6 +174,13 @@ app.get('/ai/term-sheet/:cik/:accession_number', async (req, res) => {
 app.get('/ai/assets/:cik', async (req, res) => {
   const cik = req.params.cik;
   const assets = await database.getLatestAssets(cik);
+  if (!assets || assets.length === 0) {
+    return res.status(404).send(`No assets found for CIK: ${cik}`);
+  }
+  // Ensure assets is an array
+  if (!Array.isArray(assets)) {
+    return res.status(500).send('Error retrieving assets data');
+  }
   const summary = await genai.assetsAnalysis(assets, process.env.GEMINI_API_KEY, req);
   res.send(summary);
 });
@@ -176,6 +189,13 @@ app.get('/ai/assets/:cik', async (req, res) => {
 app.get('/ai/collateral/:cik', async (req, res) => {
   const cik = req.params.cik;
   const collateral = await database.getLatestCollateral(cik);
+  if (!collateral || collateral.length === 0) {
+    return res.status(404).send(`No collateral found for CIK: ${cik}`);
+  }
+  // Ensure collateral is an array
+  if (!Array.isArray(collateral)) {
+    return res.status(500).send('Error retrieving collateral data');
+  }
   const summary = await genai.collateralAnalysis(collateral, process.env.GEMINI_API_KEY, req);
   res.send(summary);
 });

@@ -4,7 +4,7 @@ import { showProperties } from './maps.js'; // Import showProperties
 export async function reviewOffering(cik, accessionNumber, title) {
   await showProperties(cik, title);
   // Uncomment the line below if you want to re-enable AI analysis
-  //await aiAnalysis(cik, accessionNumber, title);
+  await aiAnalysis(cik, accessionNumber, title);
 }
 
 export async function aiAnalysis(cik, accessionNumber, title) {

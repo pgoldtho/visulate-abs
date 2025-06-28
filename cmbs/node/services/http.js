@@ -27,13 +27,13 @@ const limiter = new Bottleneck({
 
 async function getExhibitData(url) {
   try {
-    const xmlResponse = await axios.get(url, { headers: config.httpHeaders });
+    const xmlResponse = await limiter.schedule(() => axios.get(url, { headers: config.httpHeaders }));
     const xml = xmlResponse.data;
     const parser = new fastXml.XMLParser();
     const json = parser.parse(xml, { ignoreAttributes: false, attributeNamePrefix: '' });
     return json;
   } catch (error) {
-    console.error(`An error occurred: ${error.message} for url: ${url}`);
+    console.error(`An error occurred: ${error.message} for url: ${url} in getExhibitData`);
   }
 }
 
@@ -45,7 +45,7 @@ async function getFwp(url) {
     const html = htmlResponse.data;
     return html;
   } catch (error) {
-    console.error(`An error occurred: ${error.message} for url: ${url}`);
+    console.error(`An error occurred: ${error.message} for url: ${url} in getFwp`);
   }
 }
 
@@ -95,7 +95,7 @@ async function findEx102Filename(filingUrl) {
     const ex102 = index.directory.item.find(item => ex102regex.test(item.name));
     return ex102 ? ex102.name : null;
   } catch (error) {
-    console.error(`An error occurred: ${error.message} for url: ${filingUrl}`);
+    console.error(`An error occurred: ${error.message} for url: ${filingUrl} in findEx102Filename`);
   }
 }
 
@@ -154,8 +154,12 @@ async function insertFwpData(filename, cik) {
   const filings = objectUtils.extractFilingsByFormType(fileObject, 'FWP');
 
   // Add a row to cmbs_issuing_entities if there isn't one already
-  const existingEntities = await database.existingEntities();
-  if (!existingEntities.some(entity => entity.cik === parseInt(cik, 10))) {
+  // const existingEntities = await database.existingEntities();
+  // if (!existingEntities.some(entity => entity.cik === parseInt(cik, 10))) {
+  //   await database.saveEntity(cik, filings[0].name);
+  // }
+
+  if (filings.length > 0) {
     await database.saveEntity(cik, filings[0].name);
   }
 
