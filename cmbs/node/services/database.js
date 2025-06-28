@@ -100,7 +100,7 @@ module.exports.existingEntities = existingEntities;
 
 async function saveEntity(cik, name) {
   try {
-    const query = 'INSERT INTO cmbs_issuing_entities (cik, name) VALUES($1, $2)';
+    const query = 'INSERT INTO cmbs_issuing_entities (cik, name) VALUES($1, $2) ON CONFLICT (cik) DO NOTHING';
     const values = [parseInt(cik, 10), name];
     await db.none(query, values);
     return 'Success!';
@@ -170,6 +170,25 @@ async function saveExhibit(filing, exhibit) {
   }
 }
 module.exports.saveExhibit = saveExhibit;
+
+/**
+ * refreshMaterializedViews
+ *
+ * Refresh the materialized views after new data has been inserted.
+ */
+async function refreshMaterializedViews() {
+  try {
+    console.log('Refreshing materialized views: cmbs_assets_mv, cmbs_collateral_mv');
+    await db.none('REFRESH MATERIALIZED VIEW cmbs_assets_mv');
+    await db.none('REFRESH MATERIALIZED VIEW cmbs_collateral_mv');
+    console.log('Materialized views refreshed successfully.');
+  } catch (error) {
+    console.error(`An error occurred while refreshing materialized views: ${error.message}`);
+    throw error;
+  }
+}
+module.exports.refreshMaterializedViews = refreshMaterializedViews;
+
 
 /**
  * saveProspectus
