@@ -1,0 +1,582 @@
+openapi: 3.0.0
+info:
+  title: Visulate CMBS API
+  description: API for accessing and analyzing Commercial Mortgage-Backed Securities (CMBS) data.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /cmbs/{form}:
+    post:
+      summary: Ingest CMBS Filings
+      description: >-
+        Triggers the ingestion process for CMBS filings of a specified form type
+        from the SEC EDGAR database. This populates the backend database with new data.
+      parameters:
+        - name: form
+          in: path
+          required: true
+          description: The type of form to process.
+          schema:
+            type: string
+            enum: [ABS-EE, FWP, ZIPCODES]
+      responses:
+        '200':
+          description: Successfully processed the filings.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Data loaded successfully."
+        '400':
+          description: Invalid form type provided.
+        '500':
+          description: Internal server error during processing.
+    get:
+      summary: Get CMBS Filings List
+      description: >-
+        Retrieves a list of CMBS filings for a given form type. The response can be
+        either JSON or HTML depending on the 'Accept' header.
+      parameters:
+        - name: form
+          in: path
+          required: true
+          description: The type of form to retrieve.
+          schema:
+            type: string
+            enum: [ABS-EE, FWP]
+      responses:
+        '200':
+          description: A list of filings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FilingInfo'
+            text/html:
+              schema:
+                type: string
+                description: An HTML page listing the filings.
+        '400':
+          description: Invalid form type provided.
+
+  /:
+    get:
+      summary: Get CMBS Offerings Page
+      description: Returns the main HTML page displaying a list of CMBS term sheets and offerings.
+      responses:
+        '200':
+          description: The main application HTML page.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /filing/{cik}/{accession_number}:
+    get:
+      summary: Get Exhibit 102 Data
+      description: Retrieves the detailed Exhibit 102 data for a specific filing, identified by CIK and accession number.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+        - name: accession_number
+          in: path
+          required: true
+          description: The accession number of the filing.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The Exhibit 102 data in JSON format.
+          content:
+            application/json:
+              schema:
+                type: object # The actual structure is complex and depends on the filing
+                example: {"assetData": {"assets": [...]}}
+        '404':
+          description: Filing not found.
+
+  /properties/{cik}:
+    get:
+      summary: Get Latest Collateral Properties
+      description: Retrieves the latest collateral properties associated with a given CIK.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A JSON array of property objects.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Property'
+        '404':
+          description: No properties found for the given CIK.
+
+  /ai/term-sheet/{cik}/{accession_number}:
+    get:
+      summary: Get AI-Generated Term Sheet Summary
+      description: >-
+        Retrieves an AI-generated summary of a Free Writing Prospectus (FWP) term sheet.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+        - name: accession_number
+          in: path
+          required: true
+          description: The accession number of the filing.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An HTML summary of the term sheet.
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: Prospectus not found.
+
+  /ai/assets/{cik}:
+    get:
+      summary: Get AI-Generated Asset Analysis
+      description: Retrieves an AI-generated analysis of the latest loan assets for a given CIK.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An HTML analysis of the assets.
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: No assets found for the given CIK.
+
+  /ai/collateral/{cik}:
+    get:
+      summary: Get AI-Generated Collateral Analysis
+      description: Retrieves an AI-generated analysis of the latest collateral data for a given CIK.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: An HTML analysis of the collateral.
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: No collateral found for the given CIK.
+
+  /ai/chat:
+    post:
+      summary: Chat with the AI Analyst
+      description: >-
+        Sends a follow-up question to the AI analyst. The conversation history is
+        maintained via session cookies.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: The user's question for the AI.
+              required:
+                - question
+      responses:
+        '200':
+          description: The AI's response to the question in HTML format.
+          content:
+            text/html:
+              schema:
+                type: string
+        '400':
+          description: The 'question' field is missing from the request body.
+
+  /cik/{cik}:
+    get:
+      summary: Get Raw Filing Index (Debug)
+      description: >-
+        Retrieves the raw JSON index file for the first ABS-EE filing of a given CIK.
+        This endpoint is intended for debugging purposes.
+      parameters:
+        - name: cik
+          in: path
+          required: true
+          description: Central Index Key (CIK) of the issuing entity.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The raw JSON object from the filing's index file.
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    FilingInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "JPMDB Commercial Mortgage Securities Trust 2017-JP5"
+        cik:
+          type: string
+          example: "0001699949"
+        filename:
+          type: string
+          example: "/path/to/CIK0001699949.json"
+        filings:
+          type: array
+          items:
+            type: object
+            properties:
+              accessionNumber:
+                type: string
+                example: "0001056404-17-001912"
+              filingDate:
+                type: string
+                format: date
+                example: "2017-04-28"
+              reportDate:
+                type: string
+                format: date
+                example: "2017-04-28"
+              primaryDocument:
+                type: string
+                example: "d342424dex102.xml"
+              form:
+                type: string
+                example: "ABS-EE"
+              size:
+                type: string
+                example: "3.2 MB"
+              url:
+                type: string
+                example: "https://www.sec.gov/Archives/edgar/data/1699949/000105640417001912"
+
+    Property:
+      type: object
+      properties:
+        cik:
+          type: integer
+          description: Central Index Key of the issuing entity.
+          example: 2071746
+        accession_number:
+          type: string
+          description: The accession number of the filing.
+          example: "0001539497-25-001685"
+        filing_date:
+          type: string
+          format: date
+          description: The date the filing was made with the SEC.
+          example: "2025-06-23T04:00:00.000Z"
+        report_date:
+          type: string
+          format: date
+          description: The date of the report.
+        primary_document:
+          type: string
+          description: The primary document of the filing.
+        form:
+          type: string
+          description: The form type of the filing.
+        size:
+          type: string
+          description: The size of the filing.
+        url:
+          type: string
+          format: uri
+          description: The URL of the filing.
+          example: "https://www.sec.gov/Archives/edgar/data/0002071746/000153949725001685/exh_102.xml"
+        asset_number:
+          type: string
+          description: The asset number of the property.
+          example: 1
+        location:
+          type: string
+          description: The location of the property.
+          example: "150 EAST PALMETTO PARK ROAD, FL 33432"
+        property_name:
+          type: string
+          description: The name of the property.
+          example: "150 Palmetto"
+        property_address:
+          type: string
+          description: The address of the property.
+        property_city:
+          type: string
+          description: The city of the property.
+          example: "BOCA RATON"
+        property_state:
+          type: string
+          description: The state of the property.
+          example: "FL"
+        property_zip:
+          type: string
+          description: The zip code of the property.
+        property_county:
+          type: string
+          description: The county of the property.
+        year_built:
+          type: number
+          description: The year the property was built.
+          example: 1969
+        year_last_renovated:
+          type: number
+          description: The year the property was last renovated.
+          example: 2023
+        units_beds_rooms:
+          type: number
+          description: The number of units, beds, or rooms in the property.
+        property_type_code:
+          type: string
+          description: The property type code.
+        property_type:
+          type: string
+          description: The property type.
+          example: "Office"
+        defeased_status_code:
+          type: string
+          description: The defeased status code.
+        defeased_status:
+          type: string
+          description: The defeased status.
+          example: "No defeasance occurred"
+        property_status_code:
+          type: string
+          description: The property status code.
+        property_status:
+          type: string
+          description: The property status.
+          example: "Same as at Securitization"
+        largest_tenant:
+          type: string
+          description: The largest tenant of the property.
+          example: "Waypoint Residential Services"
+        square_feet_largest_tenant:
+          type: number
+          description: The square feet of the largest tenant.
+          example: 14677
+        lease_expiration_largest_tenant_date:
+          type: string
+          format: date
+          description: The lease expiration date of the largest tenant.
+          example: "2033-07-31T04:00:00.000Z"
+        second_largest_tenant:
+          type: string
+          description: The second largest tenant of the property.
+          example: "Bank of America, N.A"
+        square_feet_second_largest_tenant:
+          type: number
+          description: The square feet of the second largest tenant.
+          example: 14299
+        lease_expiration_second_largest_tenant_date:
+          type: string
+          format: date
+          description: The lease expiration date of the second largest tenant.
+          example: "2031-04-30T04:00:00.000Z"
+        third_largest_tenant:
+          type: string
+          description: The third largest tenant of the property.
+          example: "Zen Offices, LLC"
+        square_feet_third_largest_tenant:
+          type: number
+          description: The square feet of the third largest tenant.
+          example: 12171
+        lease_expiration_third_largest_tenant_date:
+          type: string
+          format: date
+          description: The lease expiration date of the third largest tenant.
+          example: "2030-08-31T04:00:00.000Z"
+        most_recent_annual_lease_rollover_review_date:
+          type: string
+          description: The most recent annual lease rollover review date.
+          example: "04-02-2025"
+        physical_occupancy_securitization_percentage:
+          type: number
+          description: The physical occupancy securitization percentage.
+          example: 0.94
+        most_recent_physical_occupancy_percentage:
+          type: number
+          description: The most recent physical occupancy percentage.
+          example: 0.94
+        net_rentable_square_feet:
+          type: number
+          description: The net rentable square feet.
+          example: 110952
+        most_recent_valuation_date:
+          type: string
+          format: date
+          description: The most recent valuation date.
+        most_recent_valuation_amount:
+          type: string
+          description: The most recent valuation amount.
+        most_recent_valuation_source_code:
+          type: string
+          description: The most recent valuation source code.
+        most_recent_valuation_source:
+          type: string
+          description: The most recent valuation source.
+        most_recent_financials_start_date:
+          type: string
+          format: date
+          description: The most recent financials start date.
+          example: "2024-03-01T05:00:00.000Z"
+        most_recent_financials_end_date:
+          type: string
+          format: date
+          description: The most recent financials end date.
+          example: "2025-02-28T05:00:00.000Z"
+        most_recent_revenue_amount:
+          type: number
+          description: The most recent revenue amount.
+        current_revenue:
+          type: number
+          description: The current revenue.
+          example: 6099108
+        operating_expenses_amount:
+          type: number
+          description: The operating expenses amount.
+          example: 2420529
+        current_operating_expenses:
+          type: number
+          description: The current operating expenses.
+          example: 2427179
+        most_recent_noi_amount:
+          type: number
+          description: The most recent net operating income amount.
+        current_noi:
+          type: number
+          description: The current net operating income.
+          example: 3671928
+        most_recent_net_cash_flow_amount:
+          type: number
+          description: The most recent net cash flow amount.
+        current_net_cash_flow:
+          type: number
+          description: The current net cash flow.
+          example: 3671928
+        noi_net_cash_flow_code:
+          type: string
+          description: The net operating income/net cash flow code.
+        noi_net_cash_flow_method:
+          type: string
+          description: The net operating income/net cash flow method.
+          example: "Calculated using underwriting method"
+        most_recent_debt_service_amount:
+          type: number
+          description: The most recent debt service amount.
+          example: 2573503
+        most_recent_dsc_noi_percentage:
+          type: number
+          description: The most recent debt service coverage net operating income percentage.
+          example: 1.24
+        most_recent_dsc_net_cash_flow_percentage:
+          type: number
+          description: The most recent debt service coverage net cash flow percentage.
+          example: 1.24
+        net_rentable_square_feet_securitization:
+          type: number
+          description: The net rentable square feet securitization.
+          example: 110952
+        valuation_securitization_date:
+          type: string
+          format: date
+          description: The valuation securitization date.
+          example: "2025-04-17T04:00:00.000Z"
+        valuation_securitization_amount:
+          type: number
+          description: The valuation securitization amount.
+          example: 57300000
+        valuation_source_securitization_code:
+          type: string
+          description: The valuation source securitization code.
+        valuation_source_securitization:
+          type: string
+          description: The valuation source securitization.
+          example: "Certified MAI appraisal"
+        financials_securitization_date:
+          type: string
+          format: date
+          description: The financials securitization date.
+          example: "2025-02-28T05:00:00.000Z"
+        revenue_securitization_amount:
+          type: number
+          description: The revenue securitization amount.
+          example: 6473294
+        monthly_revenue_securitization:
+          type: number
+          description: The monthly revenue securitization.
+        operating_expenses_securitization_amount:
+          type: number
+          description: The operating expenses securitization amount.
+          example: 2369452
+        monthly_operating_expenses_securitization:
+          type: number
+          description: The monthly operating expenses securitization.
+        noi_securitization_amount:
+          type: number
+          description: The net operating income securitization amount.
+          example: 4103842
+        monthly_noi_securitization:
+          type: number
+          description: The monthly net operating income securitization.
+        noi_net_cash_flow_securitization_code:
+          type: string
+          description: The net operating income/net cash flow securitization code.
+        noi_net_cash_flow_securitization_method:
+          type: string
+          description: The net operating income/net cash flow securitization method.
+          example: "Calculated using underwriting method"
+        net_cash_flow_flow_securitization_amount:
+          type: number
+          description: The net cash flow securitization amount.
+          example: 4020700
+        monthly_net_cash_flow_securitization:
+          type: number
+          description: The monthly net cash flow securitization.
+        dsc_noi_securitization_percentage:
+          type: number
+          description: The debt service coverage net operating income securitization percentage.
+          example: 1.52
+        dsc_net_cash_flow_securitization_percentage:
+          type: number
+          description: The debt service coverage net cash flow securitization percentage.
+          example: 1.5

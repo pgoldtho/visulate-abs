@@ -80,7 +80,32 @@ async function sendToLLM(req, message, apiKey) {
     req.session.history.push({ role: "user", parts: [{text: message}] });
     req.session.history.push({ role: "model", parts: [{text: textResponse}] });
 
-    return marked.parse(textResponse);
+    // The LLM sometimes indents an entire markdown response, which causes `marked`
+    // to wrap it in a <pre><code> block instead of parsing the markdown within it.
+    // This can happen to the whole response or just parts of it, often after an
+    // unindented introductory sentence.
+    // The following logic splits the response into blocks separated by blank lines,
+    // dedents each block individually, and then rejoins them. This preserves
+    // formatting for unindented paragraphs while correctly parsing indented
+    // markdown lists and other elements.
+    const dedent = (textBlock) => {
+      const lines = textBlock.split('\n');
+      const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+      if (nonEmptyLines.length === 0) {
+        return textBlock;
+      }
+      const minIndent = Math.min(
+        ...nonEmptyLines.map(line => (line.match(/^\s*/) || [''])[0].length)
+      );
+      if (minIndent > 0) {
+        return lines.map(line => line.substring(minIndent)).join('\n');
+      }
+      return textBlock;
+    };
+
+    // Split by two or more newlines to handle paragraph breaks, dedent each part, and rejoin.
+    const unindentedText = textResponse.split(/\n{2,}/).map(dedent).join('\n\n');
+    return marked.parse(unindentedText);
   } catch (error) {
     console.error("Error communicating with Gemini API:", error);
     throw new Error(`Failed to communicate with Gemini: ${error.message}`);
@@ -151,6 +176,7 @@ async function assetsAnalysis(assets, apiKey, req) {
 
 
 async function collateralAnalysis(collateral, apiKey, req) {
+  resetSession(req);
   let prompt = `
     The following document dated ${collateral[0].filing_date} has the latest EXH 102 data for the properties used as collateral
     For the loans. Note that the asset numbers in this document correspond to the asset numbers in the assets document.
