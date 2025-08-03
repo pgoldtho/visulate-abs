@@ -33,6 +33,18 @@ export function initializeAutocomplete() {
     }
     previousSelection = trust;
     reviewOffering(trust.cik, trust.accession_number, trust.trust);
+    // Clear the AI Analysis for the previous selection
+    const collateralContainer = document.getElementById('collateral');
+    collateralContainer.innerHTML = '';
+
+    // Set the "Offering Details" tab active
+    const tabsElem = document.querySelector('.tabs');
+    if (tabsElem) {
+      const tabsInstance = M.Tabs.getInstance(tabsElem);
+      if (tabsInstance) {
+        tabsInstance.select('offering');
+      }
+    }
   });
 
   const autocompleteInput = document.getElementById('autocomplete-input');

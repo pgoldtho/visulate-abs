@@ -154,8 +154,13 @@ export async function showProperties(cik, title) {
     showWorking(`Reviewing ${title} ...`);
 
     const propertyContainer = document.getElementById('properties');
+    const offeringContainer = document.getElementById('offering');
+
     let response = await fetch(`/properties/${cik}`);
-    propertiesData = await response.json();
+    const data = await response.json();
+    const termSheetData = data.termSheet || [];
+    propertiesData = data.properties || [];
+
 
     if (propertiesData && propertiesData.length > 0) {
       hideWorking();
@@ -172,12 +177,24 @@ export async function showProperties(cik, title) {
       selectedMarker = null;
       selectedPin = null;
 
+      offeringContainer.innerHTML = `
+        ${termSheetData.length > 0 ? `
+        <h5>Term Sheet</h5>
+        <div id="term-sheet-list">
+          ${termSheetData.map(ts => `
+              ${ts.summary ? `<div>${ts.summary}</div>` : ''}
+          `).join('')}
+        </div>
+        ` : ''}
+      `;
+
       propertyContainer.innerHTML = `
         <h5>Property Data</h5>
         <div id="map"></div>
-        <div id="location-map"></div>
-        <div id="location-pano"></div>
-        <button id="clear-selection-btn" class="btn waves-effect waves-light blue darken-1" style="margin-top: 10px; margin-bottom: 20px;"><i class="material-icons left">clear</i>Clear Property Selection</button>
+        <div id="location-map" style="display: none;"></div>
+        <div id="location-pano" style="display: none;"></div>
+        <button id="clear-selection-btn" style="display: none; margin-top: 10px; margin-bottom: 20px;" class="btn darken-1">
+        <i class="material-icons left">clear</i>Clear Property Selection</button>
         <ul id="property-list" class="collapsible"></ul>
       `;
 

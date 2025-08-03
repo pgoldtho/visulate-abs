@@ -58,15 +58,15 @@ async function sendToLLM(req, message, apiKey) {
 
     // Initialize the model, pass history
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash-lite-preview-06-17",
       systemInstruction: systemInstructions
     });
     // Prepare the chat history and content
     const chat = model.startChat({
       history: history,
       generationConfig: {
-        maxOutputTokens: 8192, // Adjust as needed
-        temperature: 0.8, // Adjust as needed
+        maxOutputTokens: 64000, // Adjust as needed
+        temperature: 0.5, // Adjust as needed
         topP: 1,
       },
     });
@@ -140,8 +140,16 @@ async function termSheetSummary(document, apiKey, req) {
 
     ${document.prospectus_text}
 
+    The document describes the structure of a CMBS deal, including the loan characteristics
+    followed by a description of the top 15 loans and their properties used as collateral.
+
     Provide a concise summary of the key points of the term sheet,
-    focusing on the loan characteristics, deal structure, and underlying properties.`;
+    focusing on the loan characteristics, deal structure, and underlying properties.
+
+    Include a 500 word description for each of the top 15 properties.
+    Include details of the property type, location and size along with
+    operating details such as occupancy, NOI, rent roll, and the major tenants
+    and any other relevant financial metrics.`;
 
   response += await sendToLLM(req, prompt, apiKey);
 
@@ -175,11 +183,38 @@ async function assetsAnalysis(assets, apiKey, req) {
 }
 
 
-async function collateralAnalysis(collateral, apiKey, req) {
+async function collateralAnalysis(collateralData, apiKey, req) {
   resetSession(req);
+  const termSheet = collateralData.termSheet;
+  if (!termSheet) {
+    throw new Error("No term sheet data available for analysis.");
+  }
+  if (!collateralData || !collateralData.collateral) {
+    throw new Error("Collateral data is missing or not in the expected format.");
+  }
+  const collateral = collateralData.collateral;
+  if (!collateral || collateral.length === 0) {
+    throw new Error("No collateral data available for analysis.");
+  }
+  if (!Array.isArray(collateral)) {
+    throw new Error("Collateral data is not in the expected array format.");
+  }
+
   let prompt = `
-    The following document dated ${collateral[0].filing_date} has the latest EXH 102 data for the properties used as collateral
-    For the loans. Note that the asset numbers in this document correspond to the asset numbers in the assets document.
+    The following HTML document is a summary of a CMBS term sheet:
+
+    ${termSheet}
+
+    The following JSON document dated ${collateral[0].filing_date} has the latest EXH 102 data for the properties used as collateral
+    for the deal.
+    Each property has been assigned a property number. This will be an integer value for Single-Asset/Single-Borrower loans.
+    Multi-Asset/Multi-Borrower (MABA) loans will have an integer value for the asset with sub values for the individual properties.
+    For example MAMB loan 3 could have properties 3.01, 3.02, 3.03, or 3-001, 3-002, 3-003 .. etc. Some of the values for these properties
+    are rolled up to the parent property e.g 3 and not repeated for the sub properties.
+
+    Review the properties used as collateral for the deal. Look for any discrepancies in the supplied values.
+    Pay less attention to missing or null values. Look for any suspicious values like values that remain unchanged over an extended period of time.
+    Review the property types, locations, sizes, and operating details such as occupancy, NOI, rent roll, and the major tenants.
 
     Review the financial performance of these properties looking properties that are underperforming or performing better than expected.
     Compare the "securitization" values to the "current" ones. Highlight any with significant differences. Compare the

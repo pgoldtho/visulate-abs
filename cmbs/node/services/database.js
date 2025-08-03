@@ -460,3 +460,79 @@ async function getTermSheets() {
   }
 }
 module.exports.getTermSheets = getTermSheets;
+
+/**
+ * getTermSheetNoSummary
+ */
+async function getTermSheetNoSummary() {
+  const query = `
+  SELECT DISTINCT ON (ctsv.cik)
+        ctsv.primary_document,
+        ctsv.cik,
+        ctsv.accession_number,
+        ctsv.url,
+        ctsv.filing_date
+ FROM cmbs_term_sheets_v AS ctsv
+ WHERE NOT EXISTS (
+      SELECT 1
+      FROM cmbs_document_summaries AS cds
+      WHERE ctsv.primary_document = cds.primary_document
+ )
+ ORDER BY ctsv.cik, ctsv.filing_date DESC, ctsv.primary_document;
+  `
+  try {
+    const data = await db.any(query);
+    return data;
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  }
+}
+module.exports.getTermSheetNoSummary = getTermSheetNoSummary;
+
+/**
+ * saveTermSheetSummary
+ * @param {string} primaryDocument
+ * @param {string} summary
+ * @returns {string} - Success message or error message
+ */
+async function saveTermSheetSummary(primaryDocument, summary) {
+  try {
+    const query = `
+      INSERT INTO cmbs_document_summaries (primary_document, summary)
+      VALUES ($1, $2)
+      ON CONFLICT (primary_document) DO UPDATE SET summary = EXCLUDED.summary
+    `;
+    const values = [primaryDocument, summary];
+    await db.none(query, values);
+    return 'Success!';
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+    return `Error: ${error.message}`;
+  }
+}
+module.exports.saveTermSheetSummary = saveTermSheetSummary;
+
+
+/** * getTermSheetSummary
+ * @param {cik} cik
+ * @returns {string} - HTML summary of the term sheet
+ */
+async function getTermSheetSummary(cik) {
+  // Query cmbs_term_sheets_v to get the primary_document name
+  const query = `
+  select t.filing_date, t.accession_number, t.url, t.primary_document, s.summary
+  from cmbs_document_summaries as s
+  join cmbs_term_sheets_v as t
+    on s.primary_document = t.primary_document
+  where cik = $1
+  order by t.filing_date desc
+  `;
+  try {
+    const values = [cik];
+    const data = await db.any(query, values);
+    return data;
+  } catch (error) {
+    console.error(`An error occurred: ${error.message}`);
+  }
+}
+module.exports.getTermSheetSummary = getTermSheetSummary;
