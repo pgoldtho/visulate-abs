@@ -38,9 +38,12 @@ export function initializeAutocomplete() {
     collateralContainer.innerHTML = '';
 
     // Set the "Offering Details" tab active
-    const offeringTab = document.querySelector('a[href="#offering"]');
-    if (offeringTab) {
-      offeringTab.click();
+    const tabsElem = document.querySelector('.tabs');
+    if (tabsElem) {
+      const tabsInstance = M.Tabs.getInstance(tabsElem);
+      if (tabsInstance) {
+        tabsInstance.select('offering');
+      }
     }
   });
 

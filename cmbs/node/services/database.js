@@ -519,7 +519,6 @@ module.exports.saveTermSheetSummary = saveTermSheetSummary;
  */
 async function getTermSheetSummary(cik) {
   // Query cmbs_term_sheets_v to get the primary_document name
-  // the
   const query = `
   select t.filing_date, t.accession_number, t.url, t.primary_document, s.summary
   from cmbs_document_summaries as s

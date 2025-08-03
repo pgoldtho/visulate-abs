@@ -193,7 +193,7 @@ export async function showProperties(cik, title) {
         <div id="map"></div>
         <div id="location-map" style="display: none;"></div>
         <div id="location-pano" style="display: none;"></div>
-        <button id="clear-selection-btn" style="display: none;" class="btn darken-1" style="margin-top: 10px; margin-bottom: 20px;">
+        <button id="clear-selection-btn" style="display: none; margin-top: 10px; margin-bottom: 20px;" class="btn darken-1">
         <i class="material-icons left">clear</i>Clear Property Selection</button>
         <ul id="property-list" class="collapsible"></ul>
       `;
