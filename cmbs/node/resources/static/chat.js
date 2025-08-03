@@ -30,7 +30,7 @@ async function handleChatSubmit(question) {
       });
 
       const responseHtml = await response.text();
-      const offeringContainer = document.getElementById('offering');
+      const offeringContainer = document.getElementById('collateral');
       offeringContainer.innerHTML += `<div class='user-question'>${question}</div><div class='chat-response'>${responseHtml}</div>`;
       hideWorking();
       setTimeout(scrollToBottom, 0);

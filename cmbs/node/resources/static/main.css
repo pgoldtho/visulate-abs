@@ -1,29 +1,3 @@
-/* Basic chat styling */
-#offering {
-  padding: 16px;
-  font-family: sans-serif;
-  line-height: 1.6;
-  overflow-y: auto;
-  max-height: 80vh; /* Adjust as needed */
-  scrollbar-width: thin; /* Firefox scrollbar width */
-  scrollbar-color: #ccc transparent;
-  margin-bottom: 30px;
-}
-
-/* WebKit (Chrome, Safari) scrollbar styles */
-#offering::-webkit-scrollbar {
-  width: 8px; /* Adjust width as needed */
-}
-
-#offering::-webkit-scrollbar-track {
-  background-color: transparent; /* Make the track transparent */
-}
-
-#offering::-webkit-scrollbar-thumb {
-  background-color: #ccc; /* Light gray for the thumb */
-  border-radius: 4px;
-}
-
 /* User Question Styles */
 .user-question {
   background-color: #e0f7fa; /* Light cyan/aqua */

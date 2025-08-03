@@ -62,15 +62,24 @@ app.use('/static', express.static('resources/static'));
  * ABS-EE submissions populate the exh_102_exhibits table
  * with data from the exhibit 102 files
  *
- * FWP submissions (will) populate the cmbs_prospectuses table
+ * FWP submissions populate the cmbs_prospectuses table
  * with Free Writing Prospectus submissions
+ *
+ * ZIPCODES submissions reads a zip-centroids.csv file downloaded from
+ * https://hudgis-hud.opendata.arcgis.com/datasets/d032efff520b4bf0aa620a54a477c70e/about
+ * and populates the zipcode_centroids table in the database
+ *
+ * SUMMARY submissions call database.getTermSheetNoSummary() to get a list of
+ * term sheets that do not have a summary in the database. For each term sheet it
+ * issues a request to /ai/term-sheet/:cik/:accession_number to generate a summary
+ * and stores the summary in the database using database.insertTermSheetSummary()
  *
  */
 
 app.post('/cmbs/:form', async (req, res) => {
   const form = req.params.form;
 
-  if (!['ABS-EE', 'FWP', 'ZIPCODES'].includes(form)) {
+  if (!['ABS-EE', 'FWP', 'ZIPCODES', 'SUMMARY'].includes(form)) {
     return res.status(400).send(`Invalid form type: ${form}`);
   }
 
@@ -80,6 +89,22 @@ app.post('/cmbs/:form', async (req, res) => {
       return res.status(200).send('Zipcode data loaded successfully.'); // Successful response
     }
 
+    if (form === 'SUMMARY') {
+      const termSheets = await database.getTermSheetNoSummary();
+      const results = [];
+      for (const ts of termSheets) { // For each term sheet without a summary
+        // Retrieve the prospectus from the database
+        const sheet = await database.getProspectus(ts.cik, ts.accession_number);
+        console.log(`Generating summary for term sheet: ${ts.primary_document}`);
+        // Call the AI summary endpoint for each term sheet
+        const summary = await genai.termSheetSummary(sheet, process.env.GEMINI_API_KEY, req);
+        await database.saveTermSheetSummary(ts.primary_document, summary);
+        results.push(ts.primary_document);
+      }
+      return res.json({ message: 'Summaries generated and saved.', updated: results });
+    }
+
+    // For ABS-EE and FWP forms, process the files
     const files = fileUtils.grepFiles(config.absDirectory, form);
     const eList = objectUtils.filterAutoIssuers(files, form);
     const response = await http.insertAllExhibitData(eList, form);
@@ -152,8 +177,9 @@ app.get('/filing/:cik/:accession_number', async (req, res) => {
 
 app.get('/properties/:cik', async (req, res) => {
   const cik = req.params.cik;
+  const termSheetSummary = await database.getTermSheetSummary(cik);
   const properties = await database.getLatestCollateral(cik);
-  res.json(properties);
+  res.json({ termSheet: termSheetSummary, properties: properties });
 });
 
 
@@ -188,6 +214,10 @@ app.get('/ai/assets/:cik', async (req, res) => {
 
 app.get('/ai/collateral/:cik', async (req, res) => {
   const cik = req.params.cik;
+  const termSheetSummary = await database.getTermSheetSummary(cik);
+  if (!termSheetSummary) {
+    return res.status(404).send(`No term sheet summary found for CIK: ${cik}`);
+  }
   const collateral = await database.getLatestCollateral(cik);
   if (!collateral || collateral.length === 0) {
     return res.status(404).send(`No collateral found for CIK: ${cik}`);
@@ -196,7 +226,11 @@ app.get('/ai/collateral/:cik', async (req, res) => {
   if (!Array.isArray(collateral)) {
     return res.status(500).send('Error retrieving collateral data');
   }
-  const summary = await genai.collateralAnalysis(collateral, process.env.GEMINI_API_KEY, req);
+  const collateralData = {
+    termSheet: termSheetSummary,
+    collateral: collateral
+  };
+  const summary = await genai.collateralAnalysis(collateralData, process.env.GEMINI_API_KEY, req);
   res.send(summary);
 });
 
