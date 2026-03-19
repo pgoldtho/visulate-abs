@@ -25,7 +25,7 @@
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-session": "^1.18.2",
-    "fast-xml-parser": "^4.2.5",
+    "fast-xml-parser": "^5.5.7",
     "handlebars": "^4.7.7",
     "html-to-text": "^9.0.5",
     "marked": "^15.0.7",
